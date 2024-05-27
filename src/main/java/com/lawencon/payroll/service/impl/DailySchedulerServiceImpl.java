@@ -51,7 +51,7 @@ public class DailySchedulerServiceImpl implements DailySchedulerService {
       clientAssignments.forEach(clientAssignment -> {
         final var latestSchedule = scheduleRepository.findFirstByClientAssignmentIdOrderByCreatedAtDesc(clientAssignment.getId());
         
-        if(latestSchedule == null || latestSchedule.get().getCreatedAt().getMonthValue() < LocalDateTime.now().getMonthValue()) {
+        if(latestSchedule.isEmpty() || latestSchedule.get().getCreatedAt().getMonthValue() < LocalDateTime.now().getMonthValue()) {
           schedule.setCreatedBy(system.getId());
           schedule.setClientAssignment(clientAssignment);
           schedule.setScheduleRequestType(scheduleRequestType);
