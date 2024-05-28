@@ -42,7 +42,7 @@ public class ScheduleServiceImpl implements ScheduleService {
         schedule.setScheduleRequestType(scheduleRequestType);
         schedule.setCreatedBy(principalService.getUserId());
 
-        FtpUtil.createDirectory(userId+"/"+"test1");
+        FtpUtil.createDirectory(userId);
 
         final var savedSchedule = scheduleRepository.save(schedule);
 

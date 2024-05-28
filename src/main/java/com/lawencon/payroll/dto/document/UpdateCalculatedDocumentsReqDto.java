@@ -5,12 +5,8 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class UpdateDocumentReqDto {
+public class UpdateCalculatedDocumentsReqDto {
   private String documentId;
   private String base64;
   private String documentName;
-  private String scheduleId;
-  private String clientAssignmentId;
-  private Boolean isSignedByClient;
-  private Boolean isSignedByPS;
 }
