@@ -10,4 +10,5 @@ public class NotificationResDto {
   private String notificationCode;
   private String notificationBody;
   private String notificationHeader;
+  private String routeLink;
 }

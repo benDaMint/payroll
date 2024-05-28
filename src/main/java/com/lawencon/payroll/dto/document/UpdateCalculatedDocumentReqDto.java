@@ -7,8 +7,8 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class DocumentResDto {
+public class UpdateCalculatedDocumentReqDto {
+  private String scheduleId;
   private String clientAssignmentId;
-  private List<DocumentsResDto> documentsRes;
-  private List<CalculatedResDto> calculatedDataResDto;
+  private List<UpdateCalculatedDocumentsReqDto> documents;
 }
