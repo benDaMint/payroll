@@ -1,5 +1,6 @@
 package com.lawencon.payroll.model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -20,4 +21,7 @@ public class Notification extends BaseModel {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @Column(name = "route_link", nullable = false)
+    private String routeLink;
 }

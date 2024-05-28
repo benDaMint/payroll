@@ -4,6 +4,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.transaction.TransactionScoped;
+import javax.transaction.Transactional;
+
 import org.springframework.stereotype.Service;
 
 import com.lawencon.payroll.constant.NotificationCodes;
@@ -79,19 +82,25 @@ public class PayrollServiceImpl implements PayrollService {
   }
 
   @Override
-  public InsertResDto createPingNotification(String clientAssignmentId) {
+  @Transactional
+  public InsertResDto createPingNotification(String scheduleId) {
     final var insertRes = new InsertResDto();
 
     var notification = new Notification();
 
-    final var clientAssignment = clientAssignmentRepository.findById(clientAssignmentId);
+    final var schedule = scheduleRepository.findById(scheduleId);
 
-    final var clientId = clientAssignment.get().getClientId().getId();
+    final var clientAssignment = schedule.get().getClientAssignment();
+
+    final var clientId = clientAssignment.getClientId().getId();
 
     final var user = userRepository.findById(clientId);
 
-    final var notificationTemplate = notificationTemplateRepository.findByNotificationCode(NotificationCodes.NT003.name());
+    final var notificationTemplate = notificationTemplateRepository.findByNotificationCode(NotificationCodes.NT005.name());
 
+    final var routeLink = "payrolls/"+scheduleId;
+
+    notification.setRouteLink(routeLink);
     notification.setNotificationTemplate(notificationTemplate);
     notification.setUser(user.get());
     notification.setCreatedBy(principalService.getUserId());
@@ -131,11 +140,13 @@ public class PayrollServiceImpl implements PayrollService {
       final var code = notification.getNotificationTemplate().getNotificationCode();
       final var header = notification.getNotificationTemplate().getNotificationHeader();
       final var body = notification.getNotificationTemplate().getNotificationBody();
+      final var link = notification.getRouteLink();
 
       notificationRes.setNotificationId(id);
       notificationRes.setNotificationBody(code);
       notificationRes.setNotificationCode(header);
       notificationRes.setNotificationHeader(body);
+      notificationRes.setRouteLink(link);
 
       notificationsRes.add(notificationRes);
     });

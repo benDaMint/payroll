@@ -9,6 +9,7 @@ import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
 
+import com.lawencon.payroll.constant.NotificationCodes;
 import com.lawencon.payroll.constant.ScheduleRequestTypes;
 import com.lawencon.payroll.dto.document.CalculatedResDto;
 import com.lawencon.payroll.dto.document.DocumentDownloadResDto;
@@ -23,9 +24,12 @@ import com.lawencon.payroll.dto.generalResponse.InsertResDto;
 import com.lawencon.payroll.dto.generalResponse.UpdateResDto;
 import com.lawencon.payroll.model.CalculatedPayrollDocuments;
 import com.lawencon.payroll.model.Document;
+import com.lawencon.payroll.model.Notification;
 import com.lawencon.payroll.repository.CalculatedPayrollDocumentsRepository;
 import com.lawencon.payroll.repository.ClientAssignmentRepository;
 import com.lawencon.payroll.repository.DocumentRepository;
+import com.lawencon.payroll.repository.NotificationRepository;
+import com.lawencon.payroll.repository.NotificationTemplateRepository;
 import com.lawencon.payroll.repository.ScheduleRepository;
 import com.lawencon.payroll.repository.ScheduleRequestTypeRepository;
 import com.lawencon.payroll.service.DocumentService;
@@ -40,6 +44,8 @@ public class DocumentServiceImpl implements DocumentService {
     private final DocumentRepository documentRepository;
     private final ScheduleRepository scheduleRepository;
     private final PrincipalService principalService;
+    private final NotificationRepository notificationRepository;
+    private final NotificationTemplateRepository notificationTemplateRepository;
     private final ScheduleRequestTypeRepository scheduleRequestTypeRepository;
     private final ClientAssignmentRepository clientAssignmentRepository;
     private final CalculatedPayrollDocumentsRepository calculatedPayrollDocumentsRepository;
@@ -87,6 +93,19 @@ public class DocumentServiceImpl implements DocumentService {
             document = documentRepository.save(document);
         });
         
+        
+        final var notificationTemplate = notificationTemplateRepository.findByNotificationCode(NotificationCodes.NT002.name());
+
+        final var routeLink = "payrolls/"+ data.getScheduleId();
+
+        final var notification = new Notification();
+        notification.setNotificationTemplate(notificationTemplate);
+        notification.setCreatedBy(principalService.getUserId()); 
+        notification.setRouteLink(routeLink);
+        notification.setUser(schedule.getClientAssignment().getClientId());
+
+        notificationRepository.save(notification);
+
         scheduleRepository.saveAndFlush(schedule);
 
         insertRes.setId(null);
@@ -172,6 +191,7 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
+    @Transactional
     public UpdateResDto uploadDocument(UpdateDocumentReqDto data) {
         final var updateRes = new UpdateResDto();
 
@@ -200,6 +220,11 @@ public class DocumentServiceImpl implements DocumentService {
 
         oldDocument.setUpdatedBy(principalService.getUserId());
 
+        final var notification = new Notification();
+        final var routeLink = "payrolls/"+ data.getScheduleId();
+        notification.setCreatedBy(principalService.getUserId()); 
+        notification.setRouteLink(routeLink);
+
         if(data.getIsSignedByPS()) {
             oldDocument.setIsSignedByPs(true);
             if(data.getDocumentId().equals(lastDocument.get().getId())) {
@@ -211,10 +236,23 @@ public class DocumentServiceImpl implements DocumentService {
                     scheduleRepository.saveAndFlush(schedule.get());
                 }
             }
+
+
+            final var notificationTemplate = notificationTemplateRepository.findByNotificationCode(NotificationCodes.NT004.name());
+            notification.setNotificationTemplate(notificationTemplate);
+            notification.setUser(clientAssignment.get().getClientId());
+
+
         }else if(data.getIsSignedByClient()) {
             oldDocument.setIsSignedByClient(true);
+
+            final var notificationTemplate = notificationTemplateRepository.findByNotificationCode(NotificationCodes.NT003.name());
+            notification.setNotificationTemplate(notificationTemplate);
+            notification.setUser(clientAssignment.get().getPsId());
+            
         }
 
+        notificationRepository.save(notification);
         oldDocument = documentRepository.saveAndFlush(oldDocument); 
 
         updateRes.setVersion(oldDocument.getVer());
@@ -257,6 +295,18 @@ public class DocumentServiceImpl implements DocumentService {
 
             calculatedPayrollDocumentsRepository.saveAndFlush(oldDocument.get());
         });
+
+        final var notificationTemplate = notificationTemplateRepository.findByNotificationCode(NotificationCodes.NT006.name());
+
+        final var routeLink = "payrolls/"+ dataRes.getScheduleId();
+
+        final var notification = new Notification();
+        notification.setNotificationTemplate(notificationTemplate);
+        notification.setCreatedBy(principalService.getUserId()); 
+        notification.setRouteLink(routeLink);
+        notification.setUser(clientAssignment.get().getClientId());
+
+        notificationRepository.save(notification);
 
         updateRes.setVersion(null);
         updateRes.setMessage("Document Upload Success!");

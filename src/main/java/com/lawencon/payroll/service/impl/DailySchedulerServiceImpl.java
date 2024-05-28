@@ -38,25 +38,21 @@ public class DailySchedulerServiceImpl implements DailySchedulerService {
     final var currentTime = LocalDateTime.now().getHour();
     
     if(currentTime > 0 && currentTime < 1 ){
-      final var schedule = new Schedule();
       final var clientAssignments = clientAssignmentRepository.findAll();
       final var system = userRepository.findByRoleIdRoleCode(Roles.RL000.name());
       final var scheduleRequestType = scheduleRequestTypeRepository.findByScheduleRequestCode(ScheduleRequestTypes.SQT01.name());
       final var notificationTemplate = notificationTemplateRepository.findByNotificationCode(NotificationCodes.NT001.name());
-      
-      final var notification = new Notification();
-      notification.setNotificationTemplate(notificationTemplate);
-      notification.setCreatedBy(system.getId()); 
+
       
       clientAssignments.forEach(clientAssignment -> {
         final var latestSchedule = scheduleRepository.findFirstByClientAssignmentIdOrderByCreatedAtDesc(clientAssignment.getId());
         
         if(latestSchedule.isEmpty() || latestSchedule.get().getCreatedAt().getMonthValue() < LocalDateTime.now().getMonthValue()) {
+          var schedule = new Schedule();
+          
           schedule.setCreatedBy(system.getId());
           schedule.setClientAssignment(clientAssignment);
           schedule.setScheduleRequestType(scheduleRequestType);
-          
-          notification.setUser(clientAssignment.getPsId());
 
 			    final var current = LocalDateTime.now();
 
@@ -70,7 +66,21 @@ public class DailySchedulerServiceImpl implements DailySchedulerService {
 
           FtpUtil.createNestedDirectory(finalDocuments);
 
-          scheduleRepository.save(schedule);
+          schedule = scheduleRepository.save(schedule);
+          
+          final String scheduleId = schedule.getId();
+
+          final String payrollDate = schedule.getCreatedAt().toString();
+
+          final var routeLink = "schedules/create?id="+scheduleId+"&payrollDate="+payrollDate;
+      
+          final var notification = new Notification();
+          notification.setNotificationTemplate(notificationTemplate);
+          notification.setCreatedBy(system.getId()); 
+          notification.setRouteLink(routeLink);
+          
+          notification.setUser(clientAssignment.getPsId());
+
           notificationRepository.save(notification);
 
           System.out.println("Payroll Schedule Created!");
