@@ -5,19 +5,25 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.springframework.stereotype.Service;
 
 import com.lawencon.payroll.constant.ScheduleRequestTypes;
+import com.lawencon.payroll.dto.document.CalculatedResDto;
 import com.lawencon.payroll.dto.document.DocumentDownloadResDto;
 import com.lawencon.payroll.dto.document.DocumentReqDto;
 import com.lawencon.payroll.dto.document.DocumentResDto;
 import com.lawencon.payroll.dto.document.DocumentsResDto;
 import com.lawencon.payroll.dto.document.OldDocumentResDto;
+import com.lawencon.payroll.dto.document.UpdateCalculatedDocumentReqDto;
 import com.lawencon.payroll.dto.document.UpdateDocumentReqDto;
 import com.lawencon.payroll.dto.document.UpdateDocumentScheduleReqDto;
 import com.lawencon.payroll.dto.generalResponse.InsertResDto;
 import com.lawencon.payroll.dto.generalResponse.UpdateResDto;
+import com.lawencon.payroll.model.CalculatedPayrollDocuments;
 import com.lawencon.payroll.model.Document;
+import com.lawencon.payroll.repository.CalculatedPayrollDocumentsRepository;
 import com.lawencon.payroll.repository.ClientAssignmentRepository;
 import com.lawencon.payroll.repository.DocumentRepository;
 import com.lawencon.payroll.repository.ScheduleRepository;
@@ -36,8 +42,10 @@ public class DocumentServiceImpl implements DocumentService {
     private final PrincipalService principalService;
     private final ScheduleRequestTypeRepository scheduleRequestTypeRepository;
     private final ClientAssignmentRepository clientAssignmentRepository;
+    private final CalculatedPayrollDocumentsRepository calculatedPayrollDocumentsRepository;
 
     @Override
+    @Transactional
     public InsertResDto createDocuments(DocumentReqDto data) {
         final var insertRes = new InsertResDto();
 
@@ -48,6 +56,20 @@ public class DocumentServiceImpl implements DocumentService {
         final var scheduleRequestType = scheduleRequestTypeRepository.findByScheduleRequestCode(ScheduleRequestTypes.SQT02.name());
 
         schedule.setScheduleRequestType(scheduleRequestType);
+
+        final var calculatedSalaryDocument = new CalculatedPayrollDocuments();
+        final var paycheckDocument = new CalculatedPayrollDocuments();
+
+        calculatedSalaryDocument.setActivity("Calculated Salary Document");
+        calculatedSalaryDocument.setSchedule(schedule);
+        calculatedSalaryDocument.setCreatedBy(principalService.getUserId());
+
+        paycheckDocument.setActivity("Paycheck Document");
+        paycheckDocument.setSchedule(schedule);
+        paycheckDocument.setCreatedBy(principalService.getUserId());
+
+        calculatedPayrollDocumentsRepository.saveAndFlush(calculatedSalaryDocument);
+        calculatedPayrollDocumentsRepository.saveAndFlush(paycheckDocument);
 
         documentsReq.forEach(documentReq -> {
 
@@ -76,9 +98,13 @@ public class DocumentServiceImpl implements DocumentService {
     public DocumentResDto getDocumentsByScheduleId(String scheduleId) {
         final var documentRes = new DocumentResDto();
         final var documentsRes = new ArrayList<DocumentsResDto>();
+        final var finalDocumentsRes = new ArrayList<CalculatedResDto>();
+
         final var documents = documentRepository.findByScheduleIdOrderByDocumentDeadlineAsc(scheduleId);
+        final var finalDocuments = calculatedPayrollDocumentsRepository.findAllByScheduleId(scheduleId);
         final var schedule = scheduleRepository.findById(scheduleId);
         final var clientAssignmentId = schedule.get().getClientAssignment().getId();
+
         documentRes.setClientAssignmentId(clientAssignmentId);
 
         documents.forEach(document -> {
@@ -103,7 +129,25 @@ public class DocumentServiceImpl implements DocumentService {
             documentsRes.add(newDocumentRes);
         });
 
+        finalDocuments.forEach(finalDocument -> {
+            final var finalDocumentRes = new CalculatedResDto();
+
+            final var activity = finalDocument.getActivity();
+            final var documentId = finalDocument.getId();
+            final var documentName = finalDocument.getDocumentName();
+            final var documentDirectory = finalDocument.getDocumentDirectory();
+
+            finalDocumentRes.setActivity(activity);
+            finalDocumentRes.setDocumentId(documentId);
+            finalDocumentRes.setDocumentName(documentName);
+            finalDocumentRes.setDocumentDirectory(documentDirectory);
+
+            finalDocumentsRes.add(finalDocumentRes);
+        });
+
         documentRes.setDocumentsRes(documentsRes);
+
+        documentRes.setCalculatedDataResDto(finalDocumentsRes);
 
         return documentRes;
     }
@@ -133,6 +177,8 @@ public class DocumentServiceImpl implements DocumentService {
 
         var oldDocument = documentRepository.findById(data.getDocumentId()).get();
 
+        final var lastDocument = documentRepository.findFirstByScheduleIdOrderByDocumentDeadlineDesc(data.getScheduleId());
+
         final var current = LocalDateTime.now();
         final var month = current.getMonth() + "-" + current.getYear();
         final var base64 = data.getBase64();
@@ -156,6 +202,15 @@ public class DocumentServiceImpl implements DocumentService {
 
         if(data.getIsSignedByPS()) {
             oldDocument.setIsSignedByPs(true);
+            if(data.getDocumentId().equals(lastDocument.get().getId())) {
+                final var scheduleRequestType = scheduleRequestTypeRepository.findByScheduleRequestCode(ScheduleRequestTypes.SQT03.name());
+                final var schedule = scheduleRepository.findById(data.getScheduleId());
+                if(schedule.isPresent()) {
+                    schedule.get().setScheduleRequestType(scheduleRequestType);;
+
+                    scheduleRepository.saveAndFlush(schedule.get());
+                }
+            }
         }else if(data.getIsSignedByClient()) {
             oldDocument.setIsSignedByClient(true);
         }
@@ -167,12 +222,69 @@ public class DocumentServiceImpl implements DocumentService {
 
         return updateRes;
     }
+    
+    @Override
+    @Transactional
+    public UpdateResDto uploadFinalDocument(UpdateCalculatedDocumentReqDto dataRes) {
+        final var updateRes = new UpdateResDto();
+
+        final var schedule = scheduleRepository.findById(dataRes.getScheduleId());
+        final var scheduleRequestType = scheduleRequestTypeRepository.findByScheduleRequestCode(ScheduleRequestTypes.SQT04.name());
+        final var clientAssignment = clientAssignmentRepository.findById(dataRes.getClientAssignmentId());
+        final var userId = clientAssignment.get().getClientId().getId();
+        final var current = LocalDateTime.now();
+        final var month = current.getMonth() + "-" + current.getYear();
+
+        schedule.get().setScheduleRequestType(scheduleRequestType);
+
+        scheduleRepository.saveAndFlush(schedule.get());
+
+        dataRes.getDocuments().forEach(data -> {
+            final var oldDocument = calculatedPayrollDocumentsRepository.findById(data.getDocumentId());
+
+            final var base64 = data.getBase64();
+            final var documentName = data.getDocumentName();
+
+            final var directory = "/Files/" + userId + "/"+month+"/" + "finalDocuments/";
+            
+            final var remoteFile = directory + documentName;
+
+            FtpUtil.sendFile(base64, remoteFile);
+
+            oldDocument.get().setDocumentName(documentName);
+            oldDocument.get().setDocumentDirectory(directory);
+            oldDocument.get().setUpdatedBy(principalService.getUserId());
+
+            calculatedPayrollDocumentsRepository.saveAndFlush(oldDocument.get());
+        });
+
+        updateRes.setVersion(null);
+        updateRes.setMessage("Document Upload Success!");
+
+        return updateRes;
+    }
 
     @Override
     public DocumentDownloadResDto downloadDocument(String id) {
         final var downloadRes = new DocumentDownloadResDto();
 
         final var document = documentRepository.findById(id).get();
+
+        final var documentName = document.getDocumentName();
+        
+        final var remoteFile = (document.getDocumentDirectory()) + documentName;
+
+        downloadRes.setFileName(documentName);
+        downloadRes.setFileBytes(FtpUtil.downloadFile(remoteFile));
+
+        return downloadRes;
+    }
+
+    @Override
+    public DocumentDownloadResDto downloadFinalDocument(String id) {
+        final var downloadRes = new DocumentDownloadResDto();
+
+        final var document = calculatedPayrollDocumentsRepository.findById(id).get();
 
         final var documentName = document.getDocumentName();
         
@@ -204,4 +316,5 @@ public class DocumentServiceImpl implements DocumentService {
 
         return oldDocumentsRes;
     }
+
 }

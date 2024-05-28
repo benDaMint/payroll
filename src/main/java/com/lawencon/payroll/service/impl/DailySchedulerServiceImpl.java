@@ -37,7 +37,7 @@ public class DailySchedulerServiceImpl implements DailySchedulerService {
   public void addMonthlyScheduleJob() {
     final var currentTime = LocalDateTime.now().getHour();
     
-    if(currentTime >= 0 && currentTime <= 1 ){
+    if(currentTime > 0 && currentTime < 1 ){
       final var schedule = new Schedule();
       final var clientAssignments = clientAssignmentRepository.findAll();
       final var system = userRepository.findByRoleIdRoleCode(Roles.RL000.name());
@@ -46,7 +46,7 @@ public class DailySchedulerServiceImpl implements DailySchedulerService {
       
       final var notification = new Notification();
       notification.setNotificationTemplate(notificationTemplate);
-      notification.setCreatedBy(system.getId());
+      notification.setCreatedBy(system.getId()); 
       
       clientAssignments.forEach(clientAssignment -> {
         final var latestSchedule = scheduleRepository.findFirstByClientAssignmentIdOrderByCreatedAtDesc(clientAssignment.getId());
@@ -58,7 +58,17 @@ public class DailySchedulerServiceImpl implements DailySchedulerService {
           
           notification.setUser(clientAssignment.getPsId());
 
-          FtpUtil.createNestedDirectory(clientAssignment.getClientId().getId());
+			    final var current = LocalDateTime.now();
+
+			    final var month = current.getMonth() + "-" + current.getYear();
+
+			    final String nestedDirectory = clientAssignment.getClientId().getId() +"/"+ month + "/";
+
+          FtpUtil.createNestedDirectory(nestedDirectory);
+
+          final String finalDocuments = nestedDirectory + "finalDocuments/";
+
+          FtpUtil.createNestedDirectory(finalDocuments);
 
           scheduleRepository.save(schedule);
           notificationRepository.save(notification);

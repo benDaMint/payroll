@@ -146,15 +146,9 @@ public class FtpUtil {
 
 			System.out.println("======> Create New Directory");
 
-			final var current = LocalDateTime.now();
-
-			final var month = current.getMonth() + "-" + current.getYear();
-
-			final String nestedDirectory = directory +"/"+ month + "/";
-
 			boolean success = false;
 
-			String[] pathElements = nestedDirectory.split("/");
+			String[] pathElements = directory.split("/");
 			if (pathElements != null && pathElements.length > 0) {
 				for (String singleDir : pathElements) {
 					boolean existed = ftpClient.changeWorkingDirectory(singleDir);
