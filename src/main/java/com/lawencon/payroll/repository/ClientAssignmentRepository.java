@@ -20,4 +20,6 @@ public interface ClientAssignmentRepository extends JpaRepository<ClientAssignme
   @Query(value = "SELECT ca FROM ClientAssignment ca " 
                 + "WHERE ca.psId.id = :psId ")
   List<ClientAssignment> getByPsId(@Param("psId") String psId);
+
+  ClientAssignment findByClientIdId(String clientId);
 }

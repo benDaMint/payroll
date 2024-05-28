@@ -41,6 +41,13 @@ public class PayrollController {
       return new ResponseEntity<>(scheduleRes, HttpStatus.OK);
   }
 
+  @GetMapping()
+  public ResponseEntity<List<ScheduleResDto>> getLoginClientSchedule() {
+      final var scheduleRes = scheduleService.getByLoginClient();
+
+      return new ResponseEntity<>(scheduleRes, HttpStatus.OK);
+  }
+
   @PostMapping("ping/{scheduleId}")
   public ResponseEntity<InsertResDto> pingClient(@PathVariable String scheduleId) {
     final var InsertResDto = payrollService.createPingNotification(scheduleId);

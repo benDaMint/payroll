@@ -57,9 +57,50 @@ public class ScheduleServiceImpl implements ScheduleService {
     };
 
     @Override
-public List<ScheduleResDto> getByClientAssignmentId(String clientAssignmentId) {
+    public List<ScheduleResDto> getByClientAssignmentId(String clientAssignmentId) {
         final var schedulesRes = new ArrayList<ScheduleResDto>(); 
         final var schedules = scheduleRepository.findByClientAssignmentIdOrderByCreatedAtDesc(clientAssignmentId);
+
+        schedules.forEach(schedule -> {
+            final var scheduleRes = new ScheduleResDto();
+
+            final var scheduleId = schedule.getId();
+            final var scheduleStatusName = schedule.getScheduleRequestType().getScheduleRequestName();
+            final var scheduleStatusCode = schedule.getScheduleRequestType().getScheduleRequestCode();
+            final var payrollDate = schedule.getCreatedAt().toString();
+
+            scheduleRes.setScheduleId(scheduleId);
+            scheduleRes.setScheduleStatusName(scheduleStatusName);
+            scheduleRes.setScheduleStatusCode(scheduleStatusCode);
+            scheduleRes.setPayrollDate(payrollDate);
+            scheduleRes.setCanBeRescheduled(true);
+
+            final var documents = documentRepository.findByScheduleIdOrderByDocumentDeadlineAsc(scheduleId);
+
+            if(documents.size() == 0) {
+                scheduleRes.setCanBeRescheduled(false);
+            }else {
+                for(var document : documents) {
+                    if(Optional.ofNullable(document.getDocumentDirectory()).isEmpty()) {
+                        scheduleRes.setCanBeRescheduled(false);
+                        break;
+                    }
+                }
+            }
+
+
+            schedulesRes.add(scheduleRes);
+        });
+
+        return schedulesRes;
+    }
+
+    @Override
+    public List<ScheduleResDto> getByLoginClient() {
+        final var schedulesRes = new ArrayList<ScheduleResDto>(); 
+        final var clientId = principalService.getUserId();
+        final var clientAssignment = clientAssignmentRepository.findByClientIdId(clientId);
+        final var schedules = scheduleRepository.findByClientAssignmentIdOrderByCreatedAtDesc(clientAssignment.getId());
 
         schedules.forEach(schedule -> {
             final var scheduleRes = new ScheduleResDto();
