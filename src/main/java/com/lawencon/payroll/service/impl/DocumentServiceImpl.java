@@ -349,7 +349,7 @@ public class DocumentServiceImpl implements DocumentService {
     @Override
     public List<OldDocumentResDto> getOldDocuments(String scheduleId) {
         final var oldDocumentsRes = new ArrayList<OldDocumentResDto>();
-        final var documents = documentRepository.findByScheduleId(scheduleId);
+        final var documents = documentRepository.findByScheduleIdOrderByDocumentDeadlineAsc(scheduleId);
         documents.forEach(document -> {
             final var oldDocumentRes = new OldDocumentResDto();
 

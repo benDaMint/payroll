@@ -30,8 +30,6 @@ import lombok.RequiredArgsConstructor;
 public class ScheduleServiceImpl implements ScheduleService {
 
     private final ScheduleRepository scheduleRepository;
-    private final NotificationRepository notificationRepository;
-    private final NotificationTemplateRepository notificationTemplateRepository;
     private final ClientAssignmentRepository clientAssignmentRepository;
     private final ScheduleRequestTypeRepository scheduleRequestTypeRepository;
     private final PrincipalService principalService;

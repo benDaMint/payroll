@@ -56,7 +56,6 @@ public class DocumentController {
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
         "attachment; filename=" + fileName).body(fileBytes);
     }
-
     
     @GetMapping("final/download/{id}")
     public ResponseEntity<?> downloadFinalDocument(@PathVariable String id) {
