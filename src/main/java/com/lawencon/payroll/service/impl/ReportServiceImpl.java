@@ -26,7 +26,7 @@ public class ReportServiceImpl implements ReportService  {
 
   @Override
   public JasperPrint exportReport() throws FileNotFoundException, JRException {
-    final List<ScheduleResDto> schedules = scheduleService.getByLoginClient();
+    final List<ScheduleResDto> schedules = scheduleService.getByClientAssignmentId("779c0aab-1747-4941-8b47-41d5d19f3990");
 
 		final File file = ResourceUtils.getFile("classpath:PayRollScheduleReport.jasper");
 		
