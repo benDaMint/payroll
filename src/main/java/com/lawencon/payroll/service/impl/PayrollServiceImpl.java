@@ -14,6 +14,7 @@ import com.lawencon.payroll.constant.ScheduleRequestTypes;
 import com.lawencon.payroll.dto.generalResponse.InsertResDto;
 import com.lawencon.payroll.dto.notification.NotificationResDto;
 import com.lawencon.payroll.dto.payroll.PayrollResDto;
+import com.lawencon.payroll.dto.schedule.RescheduleReqDto;
 import com.lawencon.payroll.model.Notification;
 import com.lawencon.payroll.repository.ClientAssignmentRepository;
 import com.lawencon.payroll.repository.NotificationRepository;
@@ -123,6 +124,57 @@ public class PayrollServiceImpl implements PayrollService {
 
     insertRes.setId(notification.getId());
     insertRes.setMessage("Client Has Been Pinged");
+
+    return insertRes;
+  }
+
+  @Override
+  public InsertResDto createRescheduleNotification(RescheduleReqDto data) {
+    final var insertRes = new InsertResDto();
+
+    var notification = new Notification();
+
+    final var scheduleId = data.getScheduleId();
+
+    final var newDeadline = data.getNewDeadline();
+    
+    final var schedule = scheduleRepository.findById(scheduleId);
+
+    final var clientAssignment = schedule.get().getClientAssignment();
+
+    final var psId = clientAssignment.getPsId().getId();
+
+    final var user = userRepository.findById(psId);
+
+    final var notificationTemplate = notificationTemplateRepository.findByNotificationCode(NotificationCodes.NT007.name());
+
+    final var routeLink = "payrolls/"+scheduleId;
+
+    notification.setRouteLink(routeLink);
+    notification.setNotificationTemplate(notificationTemplate);
+    notification.setUser(user.get());
+    notification.setCreatedBy(principalService.getUserId());
+
+    notification = notificationRepository.save(notification);
+
+    final var email = user.get().getEmail();
+
+    final var subject = "User Reschedule Request";
+
+    final var body = "Hello" + user.get().getUserName() + "!\n"
+                   + "Please Confirm Client's Reschedule Request"
+                   + "\nRequested Payroll Last Documents deadline : "
+                   + newDeadline;
+
+    final Runnable runnable = () -> {
+      emailService.sendEmail(email, subject, body);
+    };
+
+    final var mailThread = new Thread(runnable);
+    mailThread.start();
+
+    insertRes.setId(notification.getId());
+    insertRes.setMessage("Reschedule Request Has Been Sent");
 
     return insertRes;
   }

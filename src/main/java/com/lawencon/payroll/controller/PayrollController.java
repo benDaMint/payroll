@@ -7,12 +7,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.lawencon.payroll.dto.generalResponse.InsertResDto;
 import com.lawencon.payroll.dto.notification.NotificationResDto;
 import com.lawencon.payroll.dto.payroll.PayrollResDto;
+import com.lawencon.payroll.dto.schedule.RescheduleReqDto;
 import com.lawencon.payroll.dto.schedule.ScheduleResDto;
 import com.lawencon.payroll.service.PayrollService;
 import com.lawencon.payroll.service.ScheduleService;
@@ -60,5 +62,12 @@ public class PayrollController {
     final var notificationRes = payrollService.getNotification();
 
     return new ResponseEntity<>(notificationRes, HttpStatus.OK);
+  }
+
+  @PostMapping("reschedule")
+  public ResponseEntity<InsertResDto> postRescheduleNotification(@RequestBody RescheduleReqDto rescheduleReqDto) {
+    final var insertRes = payrollService.createRescheduleNotification(rescheduleReqDto);
+
+    return new ResponseEntity<>(insertRes, HttpStatus.OK);
   }
 }
