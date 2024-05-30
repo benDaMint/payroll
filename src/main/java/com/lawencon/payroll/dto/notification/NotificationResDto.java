@@ -11,4 +11,5 @@ public class NotificationResDto {
   private String notificationBody;
   private String notificationHeader;
   private String routeLink;
+  private Boolean isActive;
 }

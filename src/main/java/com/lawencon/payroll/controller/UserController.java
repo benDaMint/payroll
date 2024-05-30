@@ -21,6 +21,8 @@ import com.lawencon.payroll.dto.generalResponse.UpdateResDto;
 import com.lawencon.payroll.dto.user.ClientListResDto;
 import com.lawencon.payroll.dto.user.LoginReqDto;
 import com.lawencon.payroll.dto.user.LoginResDto;
+import com.lawencon.payroll.dto.user.PasswordReqDto;
+import com.lawencon.payroll.dto.user.ProfileResDto;
 import com.lawencon.payroll.dto.user.PsListResDto;
 import com.lawencon.payroll.dto.user.UpdateUserReqDto;
 import com.lawencon.payroll.dto.user.UserReqDto;
@@ -96,5 +98,17 @@ public class UserController {
     public ResponseEntity<DeleteResDto> deleteUser(@PathVariable String id) {
         final var deleteRes = userService.deleteUserById(id);
         return new ResponseEntity<>(deleteRes, HttpStatus.OK);
+    }
+
+    @PatchMapping("password")
+    public ResponseEntity<UpdateResDto> updatePassword(@RequestBody PasswordReqDto data) {
+        final var updateRes = userService.updatePassword(data);
+        return new ResponseEntity<>(updateRes, HttpStatus.OK);
+    }
+
+    @GetMapping("profile")
+    public ResponseEntity<ProfileResDto>getProfile() {
+        final var profileRes = userService.getProfile();
+        return new ResponseEntity<>(profileRes, HttpStatus.OK);
     }
 }
