@@ -2,6 +2,8 @@ package com.lawencon.payroll.service.impl;
 
 import java.time.LocalDateTime;
 
+import javax.transaction.Transactional;
+
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -34,10 +36,11 @@ public class DailySchedulerServiceImpl implements DailySchedulerService {
 
   @Scheduled(fixedRate = 1000 * 60 * 30)
   @Override
+  @Transactional
   public void addMonthlyScheduleJob() {
     final var currentTime = LocalDateTime.now().getHour();
     
-    if(currentTime > 0 && currentTime < 1 ){
+    if(currentTime >= 0 && currentTime <1 ){
       final var clientAssignments = clientAssignmentRepository.findAll();
       final var system = userRepository.findByRoleIdRoleCode(Roles.RL000.name());
       final var scheduleRequestType = scheduleRequestTypeRepository.findByScheduleRequestCode(ScheduleRequestTypes.SQT01.name());
