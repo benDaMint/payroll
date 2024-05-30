@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import javax.transaction.Transactional;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,10 +23,13 @@ import com.lawencon.payroll.dto.user.ClientListResDto;
 import com.lawencon.payroll.dto.user.ClientResDto;
 import com.lawencon.payroll.dto.user.LoginReqDto;
 import com.lawencon.payroll.dto.user.LoginResDto;
+import com.lawencon.payroll.dto.user.PasswordReqDto;
+import com.lawencon.payroll.dto.user.ProfileResDto;
 import com.lawencon.payroll.dto.user.PsListResDto;
 import com.lawencon.payroll.dto.user.UpdateUserReqDto;
 import com.lawencon.payroll.dto.user.UserReqDto;
 import com.lawencon.payroll.dto.user.UserResDto;
+import com.lawencon.payroll.exception.ComparisonNotMatchException;
 import com.lawencon.payroll.model.Company;
 import com.lawencon.payroll.model.User;
 import com.lawencon.payroll.repository.UserRepository;
@@ -324,25 +328,25 @@ public class UserServiceImpl implements UserService {
         final var oldVersion = user.getVer();
 
         var name = Optional.ofNullable(data.getUserName());
-        if (name.isPresent()) {
+        if (name.isPresent() && name.get() != "") {
             user.setUserName(name.get());
             counter++;
         }
 
         var email = Optional.ofNullable(data.getEmail());
-        if (email.isPresent()) {
+        if (email.isPresent() && email.get() != "") {
             user.setEmail(email.get());
             counter++;
         }
 
         var phoneNo = Optional.ofNullable(data.getPhoneNumber());
-        if (phoneNo.isPresent()) {
+        if (phoneNo.isPresent() && phoneNo.get() != "") {
             user.setPhoneNumber(phoneNo.get());
             counter++;
         }
 
         var content = Optional.ofNullable(data.getFileContent());
-        if (content.isPresent()) {
+        if (content.isPresent() && content.get() != "") {
             var file = user.getProfilePictureId();
 
             file.setFileContent(content.get());
@@ -354,7 +358,7 @@ public class UserServiceImpl implements UserService {
         }
 
         var inputRole = Optional.ofNullable(data.getRoleId());
-        if(inputRole.isPresent()) {
+        if(inputRole.isPresent() && inputRole.get() != "") {
             final var role = roleService.getById(inputRole.get());
 
             user.setRoleId(role);
@@ -388,6 +392,50 @@ public class UserServiceImpl implements UserService {
 
         deleteRes.setMessage("User has been deleted!");
         return deleteRes;
+    }
+
+    @Override
+    @Transactional
+    public UpdateResDto updatePassword(PasswordReqDto data) {
+        final var updateRes = new UpdateResDto();
+
+        final var userId = principalService.getUserId();
+        var user = userRepository.findById(userId).get();
+        final var oldPassword = data.getOldPassword();
+        final var currentPassword = user.getPassword();
+        
+        if(!passwordEncoder.matches(oldPassword, currentPassword)) {
+            throw new ComparisonNotMatchException("Incorrect Old Password!", HttpStatus.BAD_REQUEST);
+        } else {
+            final var newPassword = passwordEncoder.encode(data.getNewPassword());
+
+            user.setPassword(newPassword);
+            user.setUpdatedBy(userId);
+
+            user = userRepository.saveAndFlush(user);
+
+            updateRes.setMessage("Successfully update password!");
+            updateRes.setVersion(user.getVer());
+    
+            return updateRes;
+        }
+        
+    }
+
+    @Override
+    public ProfileResDto getProfile() {
+        final var profileRes = new ProfileResDto();
+
+        final var user = userRepository.findById(principalService.getUserId()).get();
+
+        profileRes.setUserId(user.getId());
+        profileRes.setUserName(user.getUserName());
+        profileRes.setEmail(user.getEmail());
+        profileRes.setPhoneNumber(user.getPhoneNumber());
+        profileRes.setRoleName(user.getRoleId().getRoleName());
+        profileRes.setProfilePictureId(user.getProfilePictureId().getId());
+
+        return profileRes;
     }
 
 }
