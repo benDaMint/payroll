@@ -10,6 +10,8 @@ import com.lawencon.payroll.dto.generalResponse.UpdateResDto;
 import com.lawencon.payroll.dto.user.ClientListResDto;
 import com.lawencon.payroll.dto.user.LoginReqDto;
 import com.lawencon.payroll.dto.user.LoginResDto;
+import com.lawencon.payroll.dto.user.PasswordReqDto;
+import com.lawencon.payroll.dto.user.ProfileResDto;
 import com.lawencon.payroll.dto.user.PsListResDto;
 import com.lawencon.payroll.dto.user.UpdateUserReqDto;
 import com.lawencon.payroll.dto.user.UserReqDto;
@@ -36,4 +38,7 @@ public interface UserService extends UserDetailsService {
     
     DeleteResDto deleteUserById(String id);
 
+    UpdateResDto updatePassword(PasswordReqDto data);
+
+    ProfileResDto getProfile();
 }
