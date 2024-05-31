@@ -1,11 +1,11 @@
 package com.lawencon.payroll.controller;
 
-import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,11 +21,11 @@ import net.sf.jasperreports.engine.JasperExportManager;
 public class ReportController {
   private final ReportService reportService;
 
-  @GetMapping()
-  public ResponseEntity<?> downloadFinalDocument() throws FileNotFoundException, JRException  {
-      final String fileName = "Report.pdf";
+  @GetMapping("{scheduleId}")
+  public ResponseEntity<?> downloadFinalDocument(@PathVariable String scheduleId) throws FileNotFoundException, JRException  {
+      final var fileName = "Monthly Payroll Report.pdf";
       
-      final var jasPrint = reportService.exportReport();
+      final var jasPrint = reportService.exportReport(scheduleId);
 
       final var fileArray = JasperExportManager.exportReportToPdf(jasPrint);
 

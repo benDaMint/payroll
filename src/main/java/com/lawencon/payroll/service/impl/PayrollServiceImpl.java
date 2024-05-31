@@ -148,7 +148,7 @@ public class PayrollServiceImpl implements PayrollService {
 
     final var notificationTemplate = notificationTemplateRepository.findByNotificationCode(NotificationCodes.NT007.name());
 
-    final var routeLink = "payrolls/"+scheduleId;
+    final var routeLink = "schedules/reschedule?id="+scheduleId+"&payrollDate="+schedule.get().getCreatedAt();
 
     notification.setRouteLink(routeLink);
     notification.setNotificationTemplate(notificationTemplate);
