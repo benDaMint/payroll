@@ -35,4 +35,12 @@ public class ClientAssignmentController {
     final var insertRes = clientAssignmentService.saveClientAssignment(data);
     return new ResponseEntity<>(insertRes, HttpStatus.CREATED);
   }
+
+  @GetMapping("{clientId}")
+  public ResponseEntity<ClientAssignmentResDto> getClientAssignmentByClient(@PathVariable String clientId) {
+    final var clientAssignmentRes = clientAssignmentService.getByClientId(clientId);
+
+    return new ResponseEntity<>(clientAssignmentRes, HttpStatus.OK);
+  }
+  
 }

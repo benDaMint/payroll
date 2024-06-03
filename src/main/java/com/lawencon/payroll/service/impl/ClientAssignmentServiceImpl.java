@@ -66,4 +66,21 @@ public class ClientAssignmentServiceImpl implements ClientAssignmentService {
   public Integer getTotalClients(String id) {
     return clientAssignmentRepository.getCountClientIdByPsId(id);
   }
+
+  @Override
+  public ClientAssignmentResDto getByClientId(String clientId) {
+    final var clientAssignment = clientAssignmentRepository.findByClientIdId(clientId);
+
+    final var clientAssignmentResDto = new ClientAssignmentResDto();
+
+    final var payrollServiceId = clientAssignment.getPsId().getId();
+
+    final var clientAssignmentId = clientAssignment.getId();
+
+    clientAssignmentResDto.setId(clientAssignmentId);
+    clientAssignmentResDto.setClientId(clientId);
+    clientAssignmentResDto.setPsId(payrollServiceId);
+
+    return clientAssignmentResDto;
+  }
 }

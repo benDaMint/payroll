@@ -41,4 +41,7 @@ public interface UserService extends UserDetailsService {
     UpdateResDto updatePassword(PasswordReqDto data);
 
     ProfileResDto getProfile();
+    
+    UserResDto getById(String id);
+
 }

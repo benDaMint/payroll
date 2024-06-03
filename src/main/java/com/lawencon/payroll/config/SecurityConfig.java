@@ -3,7 +3,6 @@ package com.lawencon.payroll.config;
 import java.util.ArrayList;
 import java.util.List;
 
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -48,26 +47,30 @@ public class SecurityConfig {
 		matchers.add(new AntPathRequestMatcher("/documents/download/**", HttpMethod.GET.name()));
 		matchers.add(new AntPathRequestMatcher("/documents/final/download/**", HttpMethod.GET.name()));
 		matchers.add(new AntPathRequestMatcher("/reports/**", HttpMethod.GET.name()));
-		return matchers; 
+		matchers.add(new AntPathRequestMatcher("/reports", HttpMethod.GET.name()));
+		matchers.add(new AntPathRequestMatcher("/livechat/**", HttpMethod.POST.name()));
+		matchers.add(new AntPathRequestMatcher("/livechat/**", HttpMethod.GET.name()));
+		matchers.add(new AntPathRequestMatcher("/send/livechat/**", HttpMethod.POST.name()));
+		matchers.add(new AntPathRequestMatcher("/send/livechat/**", HttpMethod.GET.name()));
+		return matchers;
 	}
-	
+
 	@Bean
-    public WebMvcConfigurer corsConfigurer() {
+	public WebMvcConfigurer corsConfigurer() {
 
-        return new WebMvcConfigurer() {
+		return new WebMvcConfigurer() {
 
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")
-                    .allowedOrigins("http://localhost:4200", "192.168.20.28:4200")
-                    .allowedMethods(
-                        HttpMethod.GET.name(),
-                        HttpMethod.POST.name(), 
-                        HttpMethod.PUT.name(), 
-                        HttpMethod.DELETE.name(),
-                        HttpMethod.PATCH.name()
-                    );
-            }
-        };
-    }
+			@Override
+			public void addCorsMappings(CorsRegistry registry) {
+				registry.addMapping("/**")
+						.allowedOrigins("http://localhost:4200")
+						.allowedMethods(
+								HttpMethod.GET.name(),
+								HttpMethod.POST.name(),
+								HttpMethod.PUT.name(),
+								HttpMethod.DELETE.name(),
+								HttpMethod.PATCH.name());
+			}
+		};
+	}
 }

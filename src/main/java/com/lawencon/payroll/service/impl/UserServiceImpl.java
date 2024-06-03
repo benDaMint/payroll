@@ -438,4 +438,16 @@ public class UserServiceImpl implements UserService {
         return profileRes;
     }
 
+    @Override
+    public UserResDto getById(String id) {
+        final UserResDto userResDto = new UserResDto();
+        Optional<User> user = userRepository.findById(id);
+        userResDto.setUserName(user.get().getUserName());
+        userResDto.setEmail(user.get().getEmail());
+        userResDto.setId(id);
+        userResDto.setPhoneNumber(user.get().getPhoneNumber());
+        userResDto.setProfilePictureId(user.get().getProfilePictureId().getId());
+        userResDto.setRoleName(user.get().getRoleId().getRoleName());
+        return userResDto;
+    }
 }

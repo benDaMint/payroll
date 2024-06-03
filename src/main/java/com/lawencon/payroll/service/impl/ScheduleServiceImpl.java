@@ -8,15 +8,11 @@ import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
 
-import com.lawencon.payroll.constant.NotificationCodes;
 import com.lawencon.payroll.constant.ScheduleRequestTypes;
 import com.lawencon.payroll.dto.schedule.ScheduleResDto;
-import com.lawencon.payroll.model.Notification;
 import com.lawencon.payroll.model.Schedule;
 import com.lawencon.payroll.repository.ClientAssignmentRepository;
 import com.lawencon.payroll.repository.DocumentRepository;
-import com.lawencon.payroll.repository.NotificationRepository;
-import com.lawencon.payroll.repository.NotificationTemplateRepository;
 import com.lawencon.payroll.repository.ScheduleRepository;
 import com.lawencon.payroll.repository.ScheduleRequestTypeRepository;
 import com.lawencon.payroll.service.PrincipalService;
