@@ -12,4 +12,5 @@ public interface ClientAssignmentService {
 
   Integer getTotalClients(String id);
 
+  ClientAssignmentResDto getByClientId(String clientId);
 }

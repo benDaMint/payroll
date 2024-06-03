@@ -111,4 +111,11 @@ public class UserController {
         final var profileRes = userService.getProfile();
         return new ResponseEntity<>(profileRes, HttpStatus.OK);
     }
+
+    @GetMapping("{id}")
+    public ResponseEntity<UserResDto> getMethodName(@PathVariable String id) {
+        final var userRes = userService.getById(id);
+        return new ResponseEntity<>(userRes, HttpStatus.OK);
+    }
+
 }

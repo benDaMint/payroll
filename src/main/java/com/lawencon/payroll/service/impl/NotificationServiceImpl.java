@@ -9,6 +9,7 @@ import com.lawencon.payroll.dto.generalResponse.DeleteResDto;
 import com.lawencon.payroll.dto.notification.NotificationResDto;
 import com.lawencon.payroll.model.Notification;
 import com.lawencon.payroll.repository.NotificationRepository;
+import com.lawencon.payroll.repository.NotificationTemplateRepository;
 import com.lawencon.payroll.service.NotificationService;
 import com.lawencon.payroll.service.PrincipalService;
 
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final NotificationTemplateRepository notificationTemplateRepository;
 
     private final PrincipalService principalService;
 
@@ -41,7 +43,6 @@ public class NotificationServiceImpl implements NotificationService {
             notificationRes.setNotificationHeader(template.getNotificationHeader());
             notificationRes.setNotificationBody(template.getNotificationBody());
 
-
             notificationsRes.add(notificationRes);
         });
 
@@ -62,8 +63,11 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public DeleteResDto deleteNotification(String id) {
+        var notification = notificationRepository.findById(id).get();
+        if (notification.getNotificationTemplate().getNotificationCode().equals("NTCUS")) {
+            notificationTemplateRepository.deleteById(notification.getNotificationTemplate().getId());
+        }
         notificationRepository.deleteById(id);
-
         final var deleteRes = new DeleteResDto();
 
         return deleteRes;

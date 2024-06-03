@@ -4,7 +4,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.transaction.TransactionScoped;
 import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
