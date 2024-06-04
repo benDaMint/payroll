@@ -1,5 +1,6 @@
 package com.lawencon.payroll.service.impl;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -56,6 +57,8 @@ public class ScheduleServiceImpl implements ScheduleService {
     public List<ScheduleResDto> getByClientAssignmentId(String clientAssignmentId) {
         final var schedulesRes = new ArrayList<ScheduleResDto>(); 
         final var schedules = scheduleRepository.findByClientAssignmentIdOrderByCreatedAtDesc(clientAssignmentId);
+        final var clientAssignment = clientAssignmentRepository.findById(clientAssignmentId);
+        final var monthYearFormatter = DateTimeFormatter.ofPattern("MM/yyyy");
 
         schedules.forEach(schedule -> {
             final var scheduleRes = new ScheduleResDto();
@@ -63,12 +66,14 @@ public class ScheduleServiceImpl implements ScheduleService {
             final var scheduleId = schedule.getId();
             final var scheduleStatusName = schedule.getScheduleRequestType().getScheduleRequestName();
             final var scheduleStatusCode = schedule.getScheduleRequestType().getScheduleRequestCode();
-            final var payrollDate = schedule.getCreatedAt().toString();
+            final var createdAt = monthYearFormatter.format(schedule.getCreatedAt());
+            final var payrollDate = clientAssignment.get().getClientId().getCompanyId().getPayrollDate();
+            final var returnedPayrollDate = payrollDate+"/"+createdAt;
 
             scheduleRes.setScheduleId(scheduleId);
             scheduleRes.setScheduleStatusName(scheduleStatusName);
             scheduleRes.setScheduleStatusCode(scheduleStatusCode);
-            scheduleRes.setPayrollDate(payrollDate);
+            scheduleRes.setPayrollDate(returnedPayrollDate);
             scheduleRes.setCanBeRescheduled(true);
 
             final var documents = documentRepository.findByScheduleIdOrderByDocumentDeadlineAsc(scheduleId);
@@ -97,6 +102,7 @@ public class ScheduleServiceImpl implements ScheduleService {
         final var clientId = principalService.getUserId();
         final var clientAssignment = clientAssignmentRepository.findByClientIdId(clientId);
         final var schedules = scheduleRepository.findByClientAssignmentIdOrderByCreatedAtDesc(clientAssignment.getId());
+        final var monthYearFormatter = DateTimeFormatter.ofPattern("MM/yyyy");
 
         schedules.forEach(schedule -> {
             final var scheduleRes = new ScheduleResDto();
@@ -104,12 +110,14 @@ public class ScheduleServiceImpl implements ScheduleService {
             final var scheduleId = schedule.getId();
             final var scheduleStatusName = schedule.getScheduleRequestType().getScheduleRequestName();
             final var scheduleStatusCode = schedule.getScheduleRequestType().getScheduleRequestCode();
-            final var payrollDate = schedule.getCreatedAt().toString();
+            final var createdAt = monthYearFormatter.format(schedule.getCreatedAt());
+            final var payrollDate = clientAssignment.getClientId().getCompanyId().getPayrollDate();
+            final var returnedPayrollDate = payrollDate+"/"+createdAt;
 
             scheduleRes.setScheduleId(scheduleId);
             scheduleRes.setScheduleStatusName(scheduleStatusName);
             scheduleRes.setScheduleStatusCode(scheduleStatusCode);
-            scheduleRes.setPayrollDate(payrollDate);
+            scheduleRes.setPayrollDate(returnedPayrollDate);
             scheduleRes.setCanBeRescheduled(true);
 
             final var documents = documentRepository.findByScheduleIdOrderByDocumentDeadlineAsc(scheduleId);
@@ -118,7 +126,7 @@ public class ScheduleServiceImpl implements ScheduleService {
                 scheduleRes.setCanBeRescheduled(false);
             }else {
                 for(var document : documents) {
-                    if(Optional.ofNullable(document.getDocumentDirectory()).isEmpty()) {
+                    if(Optional.ofNullable(document.getDocumentDirectory()).isPresent()) {
                         scheduleRes.setCanBeRescheduled(false);
                         break;
                     }

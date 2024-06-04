@@ -13,6 +13,7 @@ import com.lawencon.payroll.constant.ScheduleRequestTypes;
 import com.lawencon.payroll.model.Notification;
 import com.lawencon.payroll.model.Schedule;
 import com.lawencon.payroll.repository.ClientAssignmentRepository;
+import com.lawencon.payroll.repository.DocumentRepository;
 import com.lawencon.payroll.repository.NotificationRepository;
 import com.lawencon.payroll.repository.NotificationTemplateRepository;
 import com.lawencon.payroll.repository.ScheduleRepository;
@@ -33,6 +34,7 @@ public class DailySchedulerServiceImpl implements DailySchedulerService {
   private final ScheduleRequestTypeRepository scheduleRequestTypeRepository;
   private final NotificationRepository notificationRepository;
   private final NotificationTemplateRepository notificationTemplateRepository;
+  private final DocumentRepository documentRepository;
 
   @Scheduled(fixedRate = 1000 * 60 * 30)
   @Override
@@ -45,7 +47,7 @@ public class DailySchedulerServiceImpl implements DailySchedulerService {
       final var system = userRepository.findByRoleIdRoleCode(Roles.RL000.name());
       final var scheduleRequestType = scheduleRequestTypeRepository.findByScheduleRequestCode(ScheduleRequestTypes.SQT01.name());
       final var notificationTemplate = notificationTemplateRepository.findByNotificationCode(NotificationCodes.NT001.name());
-
+      final var deadlineNotificationTemplate = notificationTemplateRepository.findByNotificationCode(NotificationCodes.NT005.name());
       
       clientAssignments.forEach(clientAssignment -> {
         final var latestSchedule = scheduleRepository.findFirstByClientAssignmentIdOrderByCreatedAtDesc(clientAssignment.getId());
@@ -87,8 +89,30 @@ public class DailySchedulerServiceImpl implements DailySchedulerService {
           notificationRepository.save(notification);
 
           System.out.println("Payroll Schedule Created!");
+        }else {
+
+          final var documents = documentRepository.findAll();
+          final var currentDate = LocalDateTime.now().getDayOfMonth();
+          documents.forEach(document -> {
+            if(document.getDocumentDirectory().isEmpty() && currentDate+2 >= document.getDocumentDeadline().getDayOfMonth()) {
+              final var routeLink = "payrolls/"+document.getSchedule().getId();
+          
+              final var notification = new Notification();
+              notification.setNotificationTemplate(deadlineNotificationTemplate);
+              notification.setCreatedBy(system.getId()); 
+              notification.setRouteLink(routeLink);
+              
+              notification.setUser(clientAssignment.getPsId());
+    
+              notificationRepository.save(notification);
+    
+              System.out.println("Payroll Schedule Created!");
+              
+            }
+          });
         }
       });
+
     }
   }
 }
