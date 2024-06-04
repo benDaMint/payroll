@@ -67,10 +67,11 @@ public class NotificationServiceImpl implements NotificationService {
         var notificationTemplateId = "";
         if (notification.getNotificationTemplate().getNotificationCode().equals("NTCUS")) {
             notificationTemplateId = notification.getNotificationTemplate().getId();
+            notificationRepository.deleteById(id);
+            notificationTemplateRepository.deleteById(notificationTemplateId);
+        } else {
+            notificationRepository.deleteById(id);
         }
-
-        notificationRepository.deleteById(id);
-        notificationTemplateRepository.deleteById(notificationTemplateId);
         final var deleteRes = new DeleteResDto();
 
         return deleteRes;
