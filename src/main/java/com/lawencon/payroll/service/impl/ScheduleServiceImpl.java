@@ -102,6 +102,7 @@ public class ScheduleServiceImpl implements ScheduleService {
         final var clientId = principalService.getUserId();
         final var clientAssignment = clientAssignmentRepository.findByClientIdId(clientId);
         final var schedules = scheduleRepository.findByClientAssignmentIdOrderByCreatedAtDesc(clientAssignment.getId());
+        final var monthYearFormatter = DateTimeFormatter.ofPattern("MM/yyyy");
 
         schedules.forEach(schedule -> {
             final var scheduleRes = new ScheduleResDto();
@@ -109,12 +110,14 @@ public class ScheduleServiceImpl implements ScheduleService {
             final var scheduleId = schedule.getId();
             final var scheduleStatusName = schedule.getScheduleRequestType().getScheduleRequestName();
             final var scheduleStatusCode = schedule.getScheduleRequestType().getScheduleRequestCode();
-            final var payrollDate = schedule.getCreatedAt().toString();
+            final var createdAt = monthYearFormatter.format(schedule.getCreatedAt());
+            final var payrollDate = clientAssignment.getClientId().getCompanyId().getPayrollDate();
+            final var returnedPayrollDate = payrollDate+"/"+createdAt;
 
             scheduleRes.setScheduleId(scheduleId);
             scheduleRes.setScheduleStatusName(scheduleStatusName);
             scheduleRes.setScheduleStatusCode(scheduleStatusCode);
-            scheduleRes.setPayrollDate(payrollDate);
+            scheduleRes.setPayrollDate(returnedPayrollDate);
             scheduleRes.setCanBeRescheduled(true);
 
             final var documents = documentRepository.findByScheduleIdOrderByDocumentDeadlineAsc(scheduleId);
