@@ -77,7 +77,7 @@ public class ScheduleServiceImpl implements ScheduleService {
                 scheduleRes.setCanBeRescheduled(false);
             }else {
                 for(var document : documents) {
-                    if(Optional.ofNullable(document.getDocumentDirectory()).isEmpty()) {
+                    if(Optional.ofNullable(document.getDocumentDirectory()).isPresent()) {
                         scheduleRes.setCanBeRescheduled(false);
                         break;
                     }

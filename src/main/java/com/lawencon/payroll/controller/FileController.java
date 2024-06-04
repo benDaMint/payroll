@@ -1,8 +1,5 @@
 package com.lawencon.payroll.controller;
 
-import java.util.Base64;
-import java.util.Optional;
-
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,8 +10,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.lawencon.payroll.dto.file.FileReqDto;
 import com.lawencon.payroll.dto.generalResponse.InsertResDto;
+
+import java.util.Base64;
+import java.util.Optional;
+
+import com.lawencon.payroll.dto.file.FileReqDto;
 import com.lawencon.payroll.model.File;
 import com.lawencon.payroll.service.FileService;
 

@@ -9,12 +9,9 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
-import com.lawencon.payroll.dto.schedule.ScheduleResDto;
 import com.lawencon.payroll.model.Document;
 import com.lawencon.payroll.repository.DocumentRepository;
-import com.lawencon.payroll.service.DocumentService;
 import com.lawencon.payroll.service.ReportService;
-import com.lawencon.payroll.service.ScheduleService;
 
 import lombok.RequiredArgsConstructor;
 import net.sf.jasperreports.engine.JRException;
