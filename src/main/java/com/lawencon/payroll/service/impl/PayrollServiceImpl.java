@@ -30,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class PayrollServiceImpl implements PayrollService {
-  
+
   private final PrincipalService principalService;
   private final ClientAssignmentRepository clientAssignmentRepository;
   private final NotificationTemplateRepository notificationTemplateRepository;
@@ -42,43 +42,46 @@ public class PayrollServiceImpl implements PayrollService {
 
   @Override
   public List<PayrollResDto> getClientPayrolls() {
-      final var psId = principalService.getUserId();
-      final var payrollRes = new ArrayList<PayrollResDto>();
-      final var clientAssignments = clientAssignmentRepository.getByPsId(psId);
+    final var psId = principalService.getUserId();
+    final var payrollRes = new ArrayList<PayrollResDto>();
+    final var clientAssignments = clientAssignmentRepository.getByPsId(psId);
 
-      clientAssignments.forEach(clientAssignment -> {
-          final var clientAssignmentId = clientAssignment.getId();
-          final var schedule = scheduleRepository.findFirstByClientAssignmentIdOrderByCreatedAtDesc(clientAssignmentId);
-          
-          final var payroll = new PayrollResDto();
-          final var clientName = clientAssignment.getClientId().getUserName();
-          final var payrollDate = clientAssignment.getClientId().getCompanyId().getPayrollDate();
+    clientAssignments.forEach(clientAssignment -> {
+      final var clientAssignmentId = clientAssignment.getId();
+      final var schedule = scheduleRepository.findFirstByClientAssignmentIdOrderByCreatedAtDesc(clientAssignmentId);
+      
+      final var payroll = new PayrollResDto();
+      final var clientName = clientAssignment.getClientId().getUserName();
+      final var clientId = clientAssignment.getClientId().getId();
+      final var payrollDate = clientAssignment.getClientId().getCompanyId().getPayrollDate();
+      
+      payroll.setClientAssignmentId(clientAssignmentId);
+      payroll.setClientName(clientName);
+      payroll.setClientId(clientId);
 
-          payroll.setClientAssignmentId(clientAssignmentId);
-          payroll.setClientName(clientName);
+      if (schedule.isPresent()) {
+        final var scheduleStatusName = schedule.get().getScheduleRequestType().getScheduleRequestName();
+        final var scheduleStatusCode = schedule.get().getScheduleRequestType().getScheduleRequestCode();
+        final var monthYearFormatter = DateTimeFormatter.ofPattern("MM/yyyy");
+        final var createdAt = monthYearFormatter.format(schedule.get().getCreatedAt());
 
-          if(schedule.isPresent()) {
-            final var scheduleStatusName = schedule.get().getScheduleRequestType().getScheduleRequestName();
-            final var scheduleStatusCode = schedule.get().getScheduleRequestType().getScheduleRequestCode();
-            final var monthYearFormatter = DateTimeFormatter.ofPattern("MM/yyyy");
-            final var createdAt = monthYearFormatter.format(schedule.get().getCreatedAt());
-  
-            final var returnedPayrollDate = payrollDate+"/"+createdAt;
-  
-            payroll.setPayrollDate(returnedPayrollDate);
-            payroll.setScheduleStatusName(scheduleStatusName);
-            payroll.setScheduleStatusCode(scheduleStatusCode);
-          }else {
-            final var scheduleStatus = scheduleRequestTypeRepository.findByScheduleRequestCode(ScheduleRequestTypes.SQT00.name());
-            payroll.setScheduleStatusName(scheduleStatus.getScheduleRequestName());
-            payroll.setScheduleStatusCode(scheduleStatus.getScheduleRequestCode());
-            payroll.setPayrollDate("--/--/--");
-          }
+        final var returnedPayrollDate = payrollDate + "/" + createdAt;
 
-          payrollRes.add(payroll);
-      });
+        payroll.setPayrollDate(returnedPayrollDate);
+        payroll.setScheduleStatusName(scheduleStatusName);
+        payroll.setScheduleStatusCode(scheduleStatusCode);
+      } else {
+        final var scheduleStatus = scheduleRequestTypeRepository
+            .findByScheduleRequestCode(ScheduleRequestTypes.SQT00.name());
+        payroll.setScheduleStatusName(scheduleStatus.getScheduleRequestName());
+        payroll.setScheduleStatusCode(scheduleStatus.getScheduleRequestCode());
+        payroll.setPayrollDate("--/--/--");
+      }
 
-      return payrollRes;
+      payrollRes.add(payroll);
+    });
+
+    return payrollRes;
   }
 
   @Override
@@ -96,9 +99,10 @@ public class PayrollServiceImpl implements PayrollService {
 
     final var user = userRepository.findById(clientId);
 
-    final var notificationTemplate = notificationTemplateRepository.findByNotificationCode(NotificationCodes.NT005.name());
+    final var notificationTemplate = notificationTemplateRepository
+        .findByNotificationCode(NotificationCodes.NT005.name());
 
-    final var routeLink = "payrolls/"+scheduleId;
+    final var routeLink = "payrolls/" + scheduleId;
 
     notification.setRouteLink(routeLink);
     notification.setNotificationTemplate(notificationTemplate);
@@ -112,7 +116,7 @@ public class PayrollServiceImpl implements PayrollService {
     final var subject = "New User Information";
 
     final var body = "Hello" + user.get().getUserName() + "!\n"
-                   + "You Need To Send The Required Documents For The Payroll Service System!";
+        + "You Need To Send The Required Documents For The Payroll Service System!";
 
     final Runnable runnable = () -> {
       emailService.sendEmail(email, subject, body);
@@ -136,7 +140,7 @@ public class PayrollServiceImpl implements PayrollService {
     final var scheduleId = data.getScheduleId();
 
     final var newDeadline = data.getNewDeadline();
-    
+
     final var schedule = scheduleRepository.findById(scheduleId);
 
     final var clientAssignment = schedule.get().getClientAssignment();
@@ -145,9 +149,10 @@ public class PayrollServiceImpl implements PayrollService {
 
     final var user = userRepository.findById(psId);
 
-    final var notificationTemplate = notificationTemplateRepository.findByNotificationCode(NotificationCodes.NT007.name());
+    final var notificationTemplate = notificationTemplateRepository
+        .findByNotificationCode(NotificationCodes.NT007.name());
 
-    final var routeLink = "schedules/reschedule?id="+scheduleId+"&payrollDate="+schedule.get().getCreatedAt();
+    final var routeLink = "schedules/reschedule?id=" + scheduleId + "&payrollDate=" + schedule.get().getCreatedAt();
 
     notification.setRouteLink(routeLink);
     notification.setNotificationTemplate(notificationTemplate);
@@ -161,9 +166,9 @@ public class PayrollServiceImpl implements PayrollService {
     final var subject = "User Reschedule Request";
 
     final var body = "Hello" + user.get().getUserName() + "!\n"
-                   + "Please Confirm Client's Reschedule Request"
-                   + "\nRequested Payroll Last Documents deadline : "
-                   + newDeadline;
+        + "Please Confirm Client's Reschedule Request"
+        + "\nRequested Payroll Last Documents deadline : "
+        + newDeadline;
 
     final Runnable runnable = () -> {
       emailService.sendEmail(email, subject, body);
@@ -205,4 +210,3 @@ public class PayrollServiceImpl implements PayrollService {
     return notificationsRes;
   }
 }
-

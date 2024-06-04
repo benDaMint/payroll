@@ -64,10 +64,13 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public DeleteResDto deleteNotification(String id) {
         var notification = notificationRepository.findById(id).get();
+        var notificationTemplateId = "";
         if (notification.getNotificationTemplate().getNotificationCode().equals("NTCUS")) {
-            notificationTemplateRepository.deleteById(notification.getNotificationTemplate().getId());
+            notificationTemplateId = notification.getNotificationTemplate().getId();
         }
+
         notificationRepository.deleteById(id);
+        notificationTemplateRepository.deleteById(notificationTemplateId);
         final var deleteRes = new DeleteResDto();
 
         return deleteRes;

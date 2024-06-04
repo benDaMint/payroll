@@ -1,7 +1,6 @@
 package com.lawencon.payroll.service.impl;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -10,7 +9,6 @@ import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
 
-import com.lawencon.payroll.constant.NotificationCodes;
 import com.lawencon.payroll.constant.Roles;
 import com.lawencon.payroll.dto.chat.ChatMessageDto;
 import com.lawencon.payroll.dto.generalResponse.InsertResDto;
@@ -109,9 +107,6 @@ public class ChatServiceImpl implements ChatService {
         notification.setNotificationTemplate(
                 notificationTemplate);
 
-        // notification.setNotificationTemplate(
-        // notificationTemplateRepository.findByNotificationCode(NotificationCodes.NT001.name()));
-
         notification.setCreatedBy(user.getId());
         notification = notificationRepository.save(notification);
 
@@ -131,7 +126,6 @@ public class ChatServiceImpl implements ChatService {
             chatRes.setMessage(selectedChat.getMessage());
             chatRes.setRecipientId(selectedChat.getRecipientId().getId());
             chatRes.setSenderId(selectedChat.getCreatedBy());
-            // chatRes.setTimestamp(selectedChat.getCreatedAt().format(DateTimeFormatter.ISO_DATE_TIME));
             chatRes.setTimestamp(selectedChat.getCreatedAt());
             return chatRes;
         }
