@@ -1,6 +1,7 @@
 package com.lawencon.payroll.service.impl;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import javax.transaction.Transactional;
 
@@ -94,7 +95,7 @@ public class DailySchedulerServiceImpl implements DailySchedulerService {
           final var documents = documentRepository.findAll();
           final var currentDate = LocalDateTime.now().getDayOfMonth();
           documents.forEach(document -> {
-            if(document.getDocumentDirectory().isEmpty() && currentDate+2 >= document.getDocumentDeadline().getDayOfMonth()) {
+            if(Optional.ofNullable(document.getDocumentDirectory()).isEmpty() && currentDate+2 >= document.getDocumentDeadline().getDayOfMonth()) {
               final var routeLink = "payrolls/"+document.getSchedule().getId();
           
               final var notification = new Notification();
@@ -102,7 +103,7 @@ public class DailySchedulerServiceImpl implements DailySchedulerService {
               notification.setCreatedBy(system.getId()); 
               notification.setRouteLink(routeLink);
               
-              notification.setUser(clientAssignment.getPsId());
+              notification.setUser(clientAssignment.getClientId());
     
               notificationRepository.save(notification);
     
