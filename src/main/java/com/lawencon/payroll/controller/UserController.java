@@ -27,6 +27,7 @@ import com.lawencon.payroll.dto.user.PsListResDto;
 import com.lawencon.payroll.dto.user.UpdateUserReqDto;
 import com.lawencon.payroll.dto.user.UserReqDto;
 import com.lawencon.payroll.dto.user.UserResDto;
+import com.lawencon.payroll.exception.ComparisonNotMatchException;
 import com.lawencon.payroll.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -36,21 +37,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final AuthenticationManager authenticationManager;
     private final UserService userService;
-
-    @PostMapping("login")
-    public ResponseEntity<LoginResDto> login(@RequestBody LoginReqDto data) {
-        final var email = data.getEmail();
-        final var password = data.getPassword();
-
-        final var auth = new UsernamePasswordAuthenticationToken(email, password);
-
-        authenticationManager.authenticate(auth);
-
-        final var loginRes = userService.loginUser(data);
-        return new ResponseEntity<>(loginRes, HttpStatus.OK);
-    }
 
     @PostMapping("")
     public ResponseEntity<InsertResDto> createUser(@RequestBody UserReqDto data) {
