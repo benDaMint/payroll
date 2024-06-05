@@ -152,7 +152,7 @@ public class UserServiceImpl implements UserService {
 
         final var body = "Hello" + role.getRoleName() + "!\n"
         + "Here's your email and password :"
-        + "Email : " + email + "\n"
+        + "Email : " + email + "\n" 
         + "Password : " + rawPassword + "\n";
 
         final Runnable runnable = () -> {
