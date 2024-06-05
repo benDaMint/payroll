@@ -18,8 +18,6 @@ import com.lawencon.payroll.dto.user.UserReqDto;
 import com.lawencon.payroll.dto.user.UserResDto;
 
 public interface UserService extends UserDetailsService {
-    LoginResDto loginUser(LoginReqDto data);
-
     InsertResDto createUser(UserReqDto data);
 
     List<UserResDto> getAllUsers();

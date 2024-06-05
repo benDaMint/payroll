@@ -58,42 +58,8 @@ public class UserServiceImpl implements UserService {
     private final CompanyService companyService;
     private final EmailService emailService;
     private final FileService fileService;
-    private final JwtService jwtService;
     private final PrincipalService principalService;
     private final RoleService roleService;
-
-    @Override
-    public LoginResDto loginUser(LoginReqDto data) {
-        final var loginRes = new LoginResDto();
-
-        final var email = data.getEmail();
-        final Optional<User> user = Optional.ofNullable(userRepository.findByEmail(email));
-
-        final var cal = Calendar.getInstance();
-        cal.setTime(new Date());
-        cal.add(Calendar.HOUR_OF_DAY, 1);
-
-        final var claims = new HashMap<String, Object>();
-        claims.put("exp", cal.getTime());
-        claims.put("id", user.get().getId());
-
-        final var token = jwtService.generateJwt(claims);
-
-        final var role = user.get().getRoleId();
-
-        final var file = user.get().getProfilePictureId();
-
-        loginRes.setUserId(user.get().getId());
-        loginRes.setUserName(user.get().getUserName());
-        loginRes.setRoleCode(role.getRoleCode());
-        loginRes.setToken(token);
-
-        if (file != null) {
-            loginRes.setFileId(file.getId());
-        }
-
-        return loginRes;
-    }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
