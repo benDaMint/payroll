@@ -6,13 +6,12 @@ import java.util.HashMap;
 import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.lawencon.payroll.dto.user.LoginReqDto;
 import com.lawencon.payroll.dto.user.LoginResDto;
-import com.lawencon.payroll.exception.ComparisonNotMatchException;
+import com.lawencon.payroll.exception.FailCheckException;
 import com.lawencon.payroll.model.User;
 import com.lawencon.payroll.repository.UserRepository;
 import com.lawencon.payroll.service.JwtService;
@@ -23,7 +22,6 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class LoginServiceImpl implements LoginService {
-    private final AuthenticationManager authenticationManager;
 
     private final JwtService jwtService;
 
@@ -44,7 +42,7 @@ public class LoginServiceImpl implements LoginService {
                 final var currentPassword = user.get().getPassword();
 
                 if (!passwordEncoder.matches(loginPassword, currentPassword)) {
-                    throw new ComparisonNotMatchException("Incorrect Password", HttpStatus.BAD_REQUEST);
+                    throw new FailCheckException("Incorrect Password", HttpStatus.BAD_REQUEST);
                 } else {
                     final var cal = Calendar.getInstance();
                     cal.setTime(new Date());
@@ -72,10 +70,10 @@ public class LoginServiceImpl implements LoginService {
 
                 return loginRes;
             } else {
-                throw new ComparisonNotMatchException("Email Not Found", HttpStatus.BAD_REQUEST);
+                throw new FailCheckException("Email Not Found", HttpStatus.BAD_REQUEST);
             }
         } catch (Exception e) {
-            throw new ComparisonNotMatchException(e.getMessage(), HttpStatus.BAD_REQUEST);
+            throw new FailCheckException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 }
