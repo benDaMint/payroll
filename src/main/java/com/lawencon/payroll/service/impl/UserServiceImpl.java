@@ -277,10 +277,10 @@ public class UserServiceImpl implements UserService {
 
             usersRes.add(userRes);
         });
-
+        
         return usersRes;
     }
-
+    
     @Override
     public UpdateResDto updateUser(UpdateUserReqDto data) {
         final var updateRes = new UpdateResDto();
