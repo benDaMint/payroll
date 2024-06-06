@@ -22,7 +22,7 @@ import com.lawencon.payroll.dto.user.PsListResDto;
 import com.lawencon.payroll.dto.user.UpdateUserReqDto;
 import com.lawencon.payroll.dto.user.UserReqDto;
 import com.lawencon.payroll.dto.user.UserResDto;
-import com.lawencon.payroll.exception.CustomException;
+import com.lawencon.payroll.exception.FailStatementException;
 import com.lawencon.payroll.model.Company;
 import com.lawencon.payroll.model.User;
 import com.lawencon.payroll.repository.UserRepository;
@@ -308,7 +308,7 @@ public class UserServiceImpl implements UserService {
                 
                 notFileCounter += 1;
             } else {
-                throw new CustomException("Email already existed", HttpStatus.BAD_REQUEST);
+                throw new FailStatementException("Email already existed", HttpStatus.BAD_REQUEST);
             }
         }
 
@@ -321,7 +321,7 @@ public class UserServiceImpl implements UserService {
 
                 notFileCounter += 1;
             } else {
-                throw new CustomException("Phone number already existed", HttpStatus.BAD_REQUEST);
+                throw new FailStatementException("Phone number already existed", HttpStatus.BAD_REQUEST);
             }
         }
 
@@ -371,7 +371,7 @@ public class UserServiceImpl implements UserService {
         final var currentPassword = user.getPassword();
         
         if(!passwordEncoder.matches(oldPassword, currentPassword)) {
-            throw new CustomException("Incorrect Old Password!", HttpStatus.BAD_REQUEST);
+            throw new FailStatementException("Incorrect Old Password!", HttpStatus.BAD_REQUEST);
         } else {
             final var newPassword = passwordEncoder.encode(data.getNewPassword());
 

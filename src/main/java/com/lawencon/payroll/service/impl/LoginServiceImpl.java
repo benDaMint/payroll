@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.lawencon.payroll.dto.user.LoginReqDto;
 import com.lawencon.payroll.dto.user.LoginResDto;
-import com.lawencon.payroll.exception.CustomException;
+import com.lawencon.payroll.exception.FailStatementException;
 import com.lawencon.payroll.model.User;
 import com.lawencon.payroll.repository.UserRepository;
 import com.lawencon.payroll.service.JwtService;
@@ -42,7 +42,7 @@ public class LoginServiceImpl implements LoginService {
                 final var currentPassword = user.get().getPassword();
 
                 if (!passwordEncoder.matches(loginPassword, currentPassword)) {
-                    throw new CustomException("Incorrect Password", HttpStatus.BAD_REQUEST);
+                    throw new FailStatementException("Incorrect Password", HttpStatus.BAD_REQUEST);
                 } else {
                     final var cal = Calendar.getInstance();
                     cal.setTime(new Date());
@@ -70,10 +70,10 @@ public class LoginServiceImpl implements LoginService {
 
                 return loginRes;
             } else {
-                throw new CustomException("Email Not Found", HttpStatus.BAD_REQUEST);
+                throw new FailStatementException("Email Not Found", HttpStatus.BAD_REQUEST);
             }
         } catch (Exception e) {
-            throw new CustomException(e.getMessage(), HttpStatus.BAD_REQUEST);
+            throw new FailStatementException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 }

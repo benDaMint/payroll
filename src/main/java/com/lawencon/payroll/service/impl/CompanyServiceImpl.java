@@ -10,7 +10,7 @@ import com.lawencon.payroll.dto.company.CompanyReqDto;
 import com.lawencon.payroll.dto.company.CompanyResDto;
 import com.lawencon.payroll.dto.company.UpdateCompanyReqDto;
 import com.lawencon.payroll.dto.generalResponse.UpdateResDto;
-import com.lawencon.payroll.exception.CustomException;
+import com.lawencon.payroll.exception.FailStatementException;
 import com.lawencon.payroll.model.Company;
 import com.lawencon.payroll.repository.CompanyRepository;
 import com.lawencon.payroll.service.CompanyService;
@@ -91,7 +91,7 @@ public class CompanyServiceImpl implements CompanyService {
                 
                 isUpdateFileOnly = false;
             } else {
-                throw new CustomException("Company name already existed", HttpStatus.BAD_REQUEST);
+                throw new FailStatementException("Company name already existed", HttpStatus.BAD_REQUEST);
             }
         }
 
