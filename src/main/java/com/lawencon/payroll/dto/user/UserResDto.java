@@ -11,5 +11,6 @@ public class UserResDto {
     private String email;
     private String roleName;
     private String phoneNumber;
-    private String profilePictureId;
+    private String profilePictureContent;
+    private String profilePictureExtension;
 }

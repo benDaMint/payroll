@@ -47,10 +47,21 @@ public interface UserRepository extends JpaRepository<User, String>{
 
   @Query(value ="SELECT us FROM User us "
               + "WHERE us.isActive = TRUE "
-              + "AND us.roleId.roleCode != :adminRoleCode ")
+              + "AND us.roleId.roleCode != :adminRoleCode "
+              + "ORDER BY us.roleId.roleName, us.userName ASC ")
   List<User> getUsers(@Param("adminRoleCode") String adminRoleCode);
   
   User findByRoleIdRoleCode(String roleCode);
 
   Optional<User> findById(String id);
+
+  @Query(value = "SELECT u.email FROM User u "
+                    + "WHERE u.id != :id "
+                    + "AND LOWER(u.email) = LOWER(:email) ")
+  Optional<String> getEmailByIdAndEmail(@Param("id") String id, @Param("email") String email);
+
+  @Query(value = "SELECT u.phoneNumber FROM User u "
+                    + "WHERE u.id != :id "
+                    + "AND LOWER(u.phoneNumber) = LOWER(:phoneNumber) ")
+  Optional<String> getPhoneNumberByIdAndPhoneNumber(@Param("id") String id, @Param("phoneNumber") String phoneNumber);
 }

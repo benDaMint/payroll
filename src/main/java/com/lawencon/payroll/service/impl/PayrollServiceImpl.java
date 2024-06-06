@@ -4,8 +4,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.transaction.Transactional;
-
 import org.springframework.stereotype.Service;
 
 import com.lawencon.payroll.constant.NotificationCodes;
@@ -85,7 +83,6 @@ public class PayrollServiceImpl implements PayrollService {
   }
 
   @Override
-  @Transactional
   public InsertResDto createPingNotification(String scheduleId) {
     final var insertRes = new InsertResDto();
 
