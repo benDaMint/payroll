@@ -5,13 +5,13 @@ import org.springframework.http.HttpStatus;
 import lombok.Getter;
 
 @Getter
-public class ComparisonNotMatchException extends RuntimeException {
+public class CustomException extends RuntimeException {
     private String message;
     private HttpStatus status;
 
-    public ComparisonNotMatchException() {}
+    public CustomException() {}
 
-    public ComparisonNotMatchException(String message, HttpStatus status) {
+    public CustomException(String message, HttpStatus status) {
         super(message);
         this.message = message;
         this.status = status;
