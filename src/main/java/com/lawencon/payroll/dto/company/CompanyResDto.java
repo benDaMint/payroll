@@ -8,5 +8,6 @@ import lombok.Setter;
 public class CompanyResDto {
     private String id;
     private String companyName;
-    private String companyLogoId;
+    private String companyLogoContent;
+    private String companyLogoExtension;
 }
