@@ -46,4 +46,10 @@ public class NotificationController {
         final var deleteRes = notificationService.deleteNotification(id);
         return new ResponseEntity<>(deleteRes, HttpStatus.OK);
     }
+
+    @DeleteMapping("all/{id}")
+    public ResponseEntity<DeleteResDto> deleteAllUserNotification(@PathVariable String id) {
+        final var deleteRes = notificationService.deleteAllUserNotification(id);
+        return new ResponseEntity<>(deleteRes, HttpStatus.OK);
+    }
 }
