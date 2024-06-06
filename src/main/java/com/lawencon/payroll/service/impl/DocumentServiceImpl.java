@@ -5,8 +5,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.transaction.Transactional;
-
 import org.springframework.stereotype.Service;
 
 import com.lawencon.payroll.constant.NotificationCodes;
@@ -51,7 +49,6 @@ public class DocumentServiceImpl implements DocumentService {
     private final CalculatedPayrollDocumentsRepository calculatedPayrollDocumentsRepository;
 
     @Override
-    @Transactional
     public InsertResDto createDocuments(DocumentReqDto data) {
         final var insertRes = new InsertResDto();
 
@@ -74,8 +71,8 @@ public class DocumentServiceImpl implements DocumentService {
         paycheckDocument.setSchedule(schedule);
         paycheckDocument.setCreatedBy(principalService.getUserId());
 
-        calculatedPayrollDocumentsRepository.saveAndFlush(calculatedSalaryDocument);
-        calculatedPayrollDocumentsRepository.saveAndFlush(paycheckDocument);
+        calculatedPayrollDocumentsRepository.save(calculatedSalaryDocument);
+        calculatedPayrollDocumentsRepository.save(paycheckDocument);
 
         documentsReq.forEach(documentReq -> {
 
@@ -106,7 +103,7 @@ public class DocumentServiceImpl implements DocumentService {
 
         notificationRepository.save(notification);
 
-        scheduleRepository.saveAndFlush(schedule);
+        scheduleRepository.save(schedule);
 
         insertRes.setId(null);
         insertRes.setMessage("Document(s) have been made!");
@@ -182,7 +179,7 @@ public class DocumentServiceImpl implements DocumentService {
             oldDoc.setDocumentDeadline(LocalDateTime.parse(documentReq.getDocumentDeadline(), formatter));
             oldDoc.setUpdatedBy(principalService.getUserId());
 
-            oldDoc = documentRepository.saveAndFlush(oldDoc); 
+            oldDoc = documentRepository.save(oldDoc); 
         });
         
         updateRes.setVersion(null);
@@ -191,7 +188,6 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    @Transactional
     public UpdateResDto uploadDocument(UpdateDocumentReqDto data) {
         final var updateRes = new UpdateResDto();
 
@@ -233,7 +229,7 @@ public class DocumentServiceImpl implements DocumentService {
                 if(schedule.isPresent()) {
                     schedule.get().setScheduleRequestType(scheduleRequestType);;
 
-                    scheduleRepository.saveAndFlush(schedule.get());
+                    scheduleRepository.save(schedule.get());
                 }
             }
 
@@ -253,7 +249,7 @@ public class DocumentServiceImpl implements DocumentService {
         }
 
         notificationRepository.save(notification);
-        oldDocument = documentRepository.saveAndFlush(oldDocument); 
+        oldDocument = documentRepository.save(oldDocument); 
 
         updateRes.setVersion(oldDocument.getVer());
         updateRes.setMessage("Document Has Been Uploaded!");
@@ -262,7 +258,6 @@ public class DocumentServiceImpl implements DocumentService {
     }
     
     @Override
-    @Transactional
     public UpdateResDto uploadFinalDocument(UpdateCalculatedDocumentReqDto dataRes) {
         final var updateRes = new UpdateResDto();
 
@@ -275,7 +270,7 @@ public class DocumentServiceImpl implements DocumentService {
 
         schedule.get().setScheduleRequestType(scheduleRequestType);
 
-        scheduleRepository.saveAndFlush(schedule.get());
+        scheduleRepository.save(schedule.get());
 
         dataRes.getDocuments().forEach(data -> {
             final var oldDocument = calculatedPayrollDocumentsRepository.findById(data.getDocumentId());
@@ -293,7 +288,7 @@ public class DocumentServiceImpl implements DocumentService {
             oldDocument.get().setDocumentDirectory(directory);
             oldDocument.get().setUpdatedBy(principalService.getUserId());
 
-            calculatedPayrollDocumentsRepository.saveAndFlush(oldDocument.get());
+            calculatedPayrollDocumentsRepository.save(oldDocument.get());
         });
 
         final var notificationTemplate = notificationTemplateRepository.findByNotificationCode(NotificationCodes.NT006.name());

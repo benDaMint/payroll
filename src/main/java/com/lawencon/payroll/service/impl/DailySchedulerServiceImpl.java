@@ -3,8 +3,6 @@ package com.lawencon.payroll.service.impl;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import javax.transaction.Transactional;
-
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -39,7 +37,6 @@ public class DailySchedulerServiceImpl implements DailySchedulerService {
 
   @Scheduled(fixedRate = 1000 * 60 * 30)
   @Override
-  @Transactional
   public void addMonthlyScheduleJob() {
     final var currentTime = LocalDateTime.now().getHour();
     
