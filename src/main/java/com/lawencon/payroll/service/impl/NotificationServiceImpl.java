@@ -3,6 +3,8 @@ package com.lawencon.payroll.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.springframework.stereotype.Service;
 
 import com.lawencon.payroll.dto.generalResponse.DeleteResDto;
@@ -62,6 +64,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    @Transactional
     public DeleteResDto deleteNotification(String id) {
         var notification = notificationRepository.findById(id).get();
         var notificationTemplateId = "";
@@ -77,4 +80,14 @@ public class NotificationServiceImpl implements NotificationService {
         return deleteRes;
     }
 
+    @Override
+    @Transactional
+    public DeleteResDto deleteAllUserNotification(String id) {
+        notificationRepository.deleteByUserId(id);
+        
+        final var deleteRes = new DeleteResDto();
+
+        deleteRes.setMessage("Notifications Has Been Cleared");
+        return deleteRes;
+    }
 }

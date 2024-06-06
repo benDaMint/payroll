@@ -20,4 +20,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Stri
                 + "WHERE n.user.id = :id "
                 + "AND n.isActive = TRUE ")
   Integer getCountById(@Param("id") String id);
+
+  Long deleteByUserId(String userId);
 }

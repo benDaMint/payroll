@@ -13,4 +13,6 @@ public interface NotificationService {
     void readNotification(String id);
 
     DeleteResDto deleteNotification(String id); 
+
+    DeleteResDto deleteAllUserNotification(String id);
 }
