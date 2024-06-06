@@ -10,7 +10,6 @@ public class UpdateUserReqDto {
     private String userName;
     private String email;
     private String phoneNumber;
-    private String roleId;
-    private String fileContent;
-    private String fileExtension;
+    private String profilePictureContent;
+    private String profilePictureExtension;
 }
