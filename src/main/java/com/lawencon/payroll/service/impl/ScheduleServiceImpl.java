@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import javax.transaction.Transactional;
-
 import org.springframework.stereotype.Service;
 
 import com.lawencon.payroll.constant.ScheduleRequestTypes;
@@ -33,7 +31,6 @@ public class ScheduleServiceImpl implements ScheduleService {
     private final DocumentRepository documentRepository;
 
     @Override
-    @Transactional
     public Schedule addNewSchedule(String clientAssignmentId, String scheduleRequestTypeId) {
         final var schedule = new Schedule();
 

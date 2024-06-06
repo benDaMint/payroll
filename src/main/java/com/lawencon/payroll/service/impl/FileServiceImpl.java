@@ -1,7 +1,5 @@
 package com.lawencon.payroll.service.impl;
 
-import javax.transaction.Transactional;
-
 import org.springframework.stereotype.Service;
 
 import com.lawencon.payroll.dto.file.FileReqDto;
@@ -22,7 +20,6 @@ public class FileServiceImpl implements FileService {
     private final PrincipalService principalService;
 
     @Override
-    @Transactional
     public File saveFile(String content, String extension) {
         final var file = new File();
         
@@ -41,7 +38,6 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    @Transactional
     public File updateFile(File file) {
         file.setUpdatedBy(principalService.getUserId());
         

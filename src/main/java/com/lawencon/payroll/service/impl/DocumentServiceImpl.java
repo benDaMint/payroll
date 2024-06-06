@@ -5,8 +5,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.transaction.Transactional;
-
 import org.springframework.stereotype.Service;
 
 import com.lawencon.payroll.constant.NotificationCodes;
@@ -51,7 +49,6 @@ public class DocumentServiceImpl implements DocumentService {
     private final CalculatedPayrollDocumentsRepository calculatedPayrollDocumentsRepository;
 
     @Override
-    @Transactional
     public InsertResDto createDocuments(DocumentReqDto data) {
         final var insertRes = new InsertResDto();
 
@@ -191,7 +188,6 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    @Transactional
     public UpdateResDto uploadDocument(UpdateDocumentReqDto data) {
         final var updateRes = new UpdateResDto();
 
@@ -262,7 +258,6 @@ public class DocumentServiceImpl implements DocumentService {
     }
     
     @Override
-    @Transactional
     public UpdateResDto uploadFinalDocument(UpdateCalculatedDocumentReqDto dataRes) {
         final var updateRes = new UpdateResDto();
 
