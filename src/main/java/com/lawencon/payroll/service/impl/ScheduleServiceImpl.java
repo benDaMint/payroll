@@ -119,6 +119,7 @@ public class ScheduleServiceImpl implements ScheduleService {
 
             final var documents = documentRepository.findByScheduleIdOrderByDocumentDeadlineAsc(scheduleId);
 
+
             if(documents.size() == 0) {
                 scheduleRes.setCanBeRescheduled(false);
             }else {

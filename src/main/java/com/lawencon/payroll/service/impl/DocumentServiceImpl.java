@@ -5,6 +5,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.format.datetime.DateFormatter;
+
 import org.springframework.stereotype.Service;
 
 import com.lawencon.payroll.constant.NotificationCodes;
@@ -174,9 +176,8 @@ public class DocumentServiceImpl implements DocumentService {
 
         data.forEach(documentReq -> {
             var oldDoc = documentRepository.findById(documentReq.getDocumentId()).get();
-	    	final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-            oldDoc.setDocumentDeadline(LocalDateTime.parse(documentReq.getDocumentDeadline(), formatter));
+            oldDoc.setDocumentDeadline(LocalDateTime.parse(documentReq.getDocumentDeadline(), DateTimeFormatter.ISO_OFFSET_DATE_TIME));
             oldDoc.setUpdatedBy(principalService.getUserId());
 
             oldDoc = documentRepository.save(oldDoc); 
