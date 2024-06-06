@@ -2,16 +2,15 @@ package com.lawencon.payroll.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-import javax.transaction.Transactional;
-
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.lawencon.payroll.dto.company.CompanyReqDto;
 import com.lawencon.payroll.dto.company.CompanyResDto;
 import com.lawencon.payroll.dto.company.UpdateCompanyReqDto;
 import com.lawencon.payroll.dto.generalResponse.UpdateResDto;
+import com.lawencon.payroll.exception.CustomException;
 import com.lawencon.payroll.model.Company;
 import com.lawencon.payroll.repository.CompanyRepository;
 import com.lawencon.payroll.service.CompanyService;
@@ -30,7 +29,6 @@ public class CompanyServiceImpl implements CompanyService {
     private final PrincipalService principalService;
 
     @Override
-    @Transactional
     public Company createCompany(CompanyReqDto data) {
         final String id = principalService.getUserId();
         
@@ -64,7 +62,8 @@ public class CompanyServiceImpl implements CompanyService {
 
             companyRes.setId(company.getId());
             companyRes.setCompanyName(company.getCompanyName());
-            companyRes.setCompanyLogoId(company.getCompanyLogo().getId());
+            companyRes.setCompanyLogoContent(company.getCompanyLogo().getFileContent());
+            companyRes.setCompanyLogoExtension(company.getCompanyLogo().getFileExtension());
             
             companiesRes.add(companyRes);
         });
@@ -73,20 +72,34 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    @Transactional
     public UpdateResDto updateCompany(UpdateCompanyReqDto data) {
-        var company = companyRepository.findById(data.getId()).get();
-
-        var name = Optional.ofNullable(data.getCompanyName());
-        if (name.isPresent()) {
-            company.setCompanyName(name.get());
-            company.setUpdatedBy(principalService.getUserId());
+        final var updateRes = new UpdateResDto();
+        
+        var isUpdateFileOnly = true;
+        
+        final var companyId = data.getId();
+        final var companyName = data.getCompanyName();
+        
+        var company = companyRepository.findById(companyId).get();
+        
+        if(!company.getCompanyName().toLowerCase().equals(companyName.toLowerCase())) {
+            final var resultName = companyRepository.getCompanyNameByIdAndName(companyId, companyName);
+            
+            if(resultName.isEmpty()) {
+                company.setCompanyName(companyName);
+                company.setUpdatedBy(principalService.getUserId());
+                
+                isUpdateFileOnly = false;
+            } else {
+                throw new CustomException("Company name already existed", HttpStatus.BAD_REQUEST);
+            }
         }
 
-        var content = Optional.ofNullable(data.getCompanyLogoContent());
-        if (content.isPresent()) {
-            var file = company.getCompanyLogo();
-            file.setFileContent(content.get());
+        final var companyLogoContent = data.getCompanyLogoContent();
+        var file = company.getCompanyLogo();
+
+        if (!file.getFileContent().equals(companyLogoContent)) {
+            file.setFileContent(companyLogoContent);
             file.setFileExtension(data.getCompanyLogoExtension());
 
             file = fileService.updateFile(file);
@@ -94,11 +107,8 @@ public class CompanyServiceImpl implements CompanyService {
             company.setCompanyLogo(file);
         }
 
-        company = companyRepository.saveAndFlush(company);
-
-        final var updateRes = new UpdateResDto();
-
-        if (name.isPresent()) {
+        if (!isUpdateFileOnly) {
+            company = companyRepository.saveAndFlush(company);
             updateRes.setVersion(company.getVer());
         }
         
