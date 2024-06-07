@@ -8,6 +8,7 @@ import javax.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import com.lawencon.payroll.dto.generalResponse.DeleteResDto;
+import com.lawencon.payroll.dto.generalResponse.UpdateResDto;
 import com.lawencon.payroll.dto.notification.NotificationResDto;
 import com.lawencon.payroll.model.Notification;
 import com.lawencon.payroll.repository.NotificationRepository;
@@ -61,6 +62,24 @@ public class NotificationServiceImpl implements NotificationService {
         var notification = notificationRepository.findById(id).get();
         notification.setIsActive(false);
         notificationRepository.save(notification);
+    }
+
+    @Override
+    @Transactional
+    public UpdateResDto readAllUserNotification(String id) {
+        final var notifications = notificationRepository.findAllByUserId(id);
+        final var updateRes = new UpdateResDto();
+
+        notifications.forEach(notification -> {
+            notification.setIsActive(false);
+        });
+
+        notificationRepository.saveAllAndFlush(notifications);
+
+        updateRes.setMessage("Notifications Read");
+        updateRes.setVersion(null);
+
+        return updateRes;
     }
 
     @Override

@@ -22,4 +22,5 @@ public interface NotificationRepository extends JpaRepository<Notification, Stri
   Integer getCountById(@Param("id") String id);
 
   Long deleteByUserId(String userId);
+
 }
