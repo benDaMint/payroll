@@ -3,10 +3,13 @@ package com.lawencon.payroll.service.impl;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.springframework.format.datetime.DateFormatter;
+import javax.mail.MessagingException;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.lawencon.payroll.constant.NotificationCodes;
@@ -32,7 +35,9 @@ import com.lawencon.payroll.repository.NotificationRepository;
 import com.lawencon.payroll.repository.NotificationTemplateRepository;
 import com.lawencon.payroll.repository.ScheduleRepository;
 import com.lawencon.payroll.repository.ScheduleRequestTypeRepository;
+import com.lawencon.payroll.repository.UserRepository;
 import com.lawencon.payroll.service.DocumentService;
+import com.lawencon.payroll.service.EmailService;
 import com.lawencon.payroll.service.PrincipalService;
 import com.lawencon.payroll.util.FtpUtil;
 
@@ -49,16 +54,21 @@ public class DocumentServiceImpl implements DocumentService {
     private final ScheduleRequestTypeRepository scheduleRequestTypeRepository;
     private final ClientAssignmentRepository clientAssignmentRepository;
     private final CalculatedPayrollDocumentsRepository calculatedPayrollDocumentsRepository;
+    private final UserRepository userRepository;
+
+    @Autowired
+    private EmailService emailService;
 
     @Override
     public InsertResDto createDocuments(DocumentReqDto data) {
         final var insertRes = new InsertResDto();
 
         final var schedule = scheduleRepository.findById(data.getScheduleId()).get();
-        
+
         final var documentsReq = data.getDocumentsReqDto();
 
-        final var scheduleRequestType = scheduleRequestTypeRepository.findByScheduleRequestCode(ScheduleRequestTypes.SQT02.name());
+        final var scheduleRequestType = scheduleRequestTypeRepository
+                .findByScheduleRequestCode(ScheduleRequestTypes.SQT02.name());
 
         schedule.setScheduleRequestType(scheduleRequestType);
 
@@ -91,19 +101,43 @@ public class DocumentServiceImpl implements DocumentService {
 
             document = documentRepository.save(document);
         });
-        
-        
-        final var notificationTemplate = notificationTemplateRepository.findByNotificationCode(NotificationCodes.NT002.name());
 
-        final var routeLink = "payrolls/"+ data.getScheduleId();
+        final var notificationTemplate = notificationTemplateRepository
+                .findByNotificationCode(NotificationCodes.NT002.name());
+
+        final var routeLink = "payrolls/" + data.getScheduleId();
 
         final var notification = new Notification();
         notification.setNotificationTemplate(notificationTemplate);
-        notification.setCreatedBy(principalService.getUserId()); 
+        notification.setCreatedBy(principalService.getUserId());
         notification.setRouteLink(routeLink);
         notification.setUser(schedule.getClientAssignment().getClientId());
 
         notificationRepository.save(notification);
+
+        final var user = schedule.getClientAssignment().getClientId();
+
+        final var email = user.getEmail();
+
+        final var subject = "Your New Payroll Schedule Is Ready!";
+
+        Map<String, Object> templateBody = new HashMap<>();
+        templateBody.put("date", LocalDateTime.now());
+        templateBody.put("subject", subject);
+        templateBody.put("username", user.getUserName());
+        templateBody.put("message",
+                "We are excited to inform you that your new payroll schedule has been successfully created. You can now view and uppdate your upcoming payroll activities according to the schedule.");
+
+        final Runnable runnable = () -> {
+            try {
+                emailService.sendEmail(email, subject, templateBody);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
+        };
+
+        final var mailThread = new Thread(runnable);
+        mailThread.start();
 
         scheduleRepository.save(schedule);
 
@@ -135,7 +169,7 @@ public class DocumentServiceImpl implements DocumentService {
             final var name = document.getDocumentName();
             final var isSignedByClient = document.getIsSignedByClient();
             final var isSignedByPs = document.getIsSignedByPs();
-            
+
             newDocumentRes.setDocumentId(id);
             newDocumentRes.setActivity(activity);
             newDocumentRes.setDocumentDeadline(deadline);
@@ -177,12 +211,41 @@ public class DocumentServiceImpl implements DocumentService {
         data.forEach(documentReq -> {
             var oldDoc = documentRepository.findById(documentReq.getDocumentId()).get();
 
-            oldDoc.setDocumentDeadline(LocalDateTime.parse(documentReq.getDocumentDeadline(), DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+            oldDoc.setDocumentDeadline(
+                    LocalDateTime.parse(documentReq.getDocumentDeadline(), DateTimeFormatter.ISO_OFFSET_DATE_TIME));
             oldDoc.setUpdatedBy(principalService.getUserId());
 
-            oldDoc = documentRepository.save(oldDoc); 
+            oldDoc = documentRepository.save(oldDoc);
         });
-        
+
+        final var doc = documentRepository.findById(data.get(0).getDocumentId());
+
+        final var schedule = scheduleRepository.findById(doc.get().getId());
+
+        final var user = userRepository.findById(schedule.get().getClientAssignment().getClientId().getId());
+
+        final var email = user.get().getEmail();
+
+        final var subject = "Your Payroll Deadline Has Been Rescheduled";
+
+        Map<String, Object> templateBody = new HashMap<>();
+        templateBody.put("date", LocalDateTime.now());
+        templateBody.put("subject", "Payroll Deadline Rescheduled");
+        templateBody.put("username", user.get().getUserName());
+        templateBody.put("message",
+                "We are writing to inform you that the payroll deadline has been rescheduled. Please check the details of your payroll on our website.");
+
+        final Runnable runnable = () -> {
+            try {
+                emailService.sendEmail(email, subject, templateBody);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
+        };
+
+        final var mailThread = new Thread(runnable);
+        mailThread.start();
+
         updateRes.setVersion(null);
         updateRes.setMessage("Document(s) have been rescheduled!");
         return updateRes;
@@ -194,7 +257,8 @@ public class DocumentServiceImpl implements DocumentService {
 
         var oldDocument = documentRepository.findById(data.getDocumentId()).get();
 
-        final var lastDocument = documentRepository.findFirstByScheduleIdOrderByDocumentDeadlineDesc(data.getScheduleId());
+        final var lastDocument = documentRepository
+                .findFirstByScheduleIdOrderByDocumentDeadlineDesc(data.getScheduleId());
 
         final var current = LocalDateTime.now();
         final var month = current.getMonth() + "-" + current.getYear();
@@ -206,8 +270,8 @@ public class DocumentServiceImpl implements DocumentService {
 
         final var userId = clientAssignment.get().getClientId().getId();
 
-        final var directory = "/Files/" + userId + "/"+month+"/";
-        
+        final var directory = "/Files/" + userId + "/" + month + "/";
+
         final var remoteFile = directory + documentName;
 
         FtpUtil.sendFile(base64, remoteFile);
@@ -218,52 +282,101 @@ public class DocumentServiceImpl implements DocumentService {
         oldDocument.setUpdatedBy(principalService.getUserId());
 
         final var notification = new Notification();
-        final var routeLink = "payrolls/"+ data.getScheduleId();
-        notification.setCreatedBy(principalService.getUserId()); 
+        final var routeLink = "payrolls/" + data.getScheduleId();
+        notification.setCreatedBy(principalService.getUserId());
         notification.setRouteLink(routeLink);
 
-        if(data.getIsSignedByPS()) {
+        if (data.getIsSignedByPS()) {
             oldDocument.setIsSignedByPs(true);
-            if(data.getDocumentId().equals(lastDocument.get().getId())) {
-                final var scheduleRequestType = scheduleRequestTypeRepository.findByScheduleRequestCode(ScheduleRequestTypes.SQT03.name());
+            if (data.getDocumentId().equals(lastDocument.get().getId())) {
+                final var scheduleRequestType = scheduleRequestTypeRepository
+                        .findByScheduleRequestCode(ScheduleRequestTypes.SQT03.name());
                 final var schedule = scheduleRepository.findById(data.getScheduleId());
-                if(schedule.isPresent()) {
-                    schedule.get().setScheduleRequestType(scheduleRequestType);;
+                if (schedule.isPresent()) {
+                    schedule.get().setScheduleRequestType(scheduleRequestType);
+                    ;
 
                     scheduleRepository.save(schedule.get());
                 }
             }
 
-
-            final var notificationTemplate = notificationTemplateRepository.findByNotificationCode(NotificationCodes.NT004.name());
+            final var notificationTemplate = notificationTemplateRepository
+                    .findByNotificationCode(NotificationCodes.NT004.name());
             notification.setNotificationTemplate(notificationTemplate);
             notification.setUser(clientAssignment.get().getClientId());
 
+            final var user = clientAssignment.get().getClientId();
+            final var email = user.getEmail();
 
-        }else if(data.getIsSignedByClient()) {
+            final var subject = "Your Document Has Been Signed";
+
+            Map<String, Object> templateBody = new HashMap<>();
+            templateBody.put("date", LocalDateTime.now());
+            templateBody.put("subject", subject);
+            templateBody.put("username", user.getUserName());
+            templateBody.put("message",
+                    "We are pleased to inform you that your document has been successfully signed by our payroll service. You can view and download the signed document by logging into your account.");
+
+            final Runnable runnable = () -> {
+                try {
+                    emailService.sendEmail(email, subject, templateBody);
+                } catch (MessagingException e) {
+                    e.printStackTrace();
+                }
+            };
+
+            final var mailThread = new Thread(runnable);
+            mailThread.start();
+
+        } else if (data.getIsSignedByClient()) {
             oldDocument.setIsSignedByClient(true);
 
-            final var notificationTemplate = notificationTemplateRepository.findByNotificationCode(NotificationCodes.NT003.name());
+            final var notificationTemplate = notificationTemplateRepository
+                    .findByNotificationCode(NotificationCodes.NT003.name());
             notification.setNotificationTemplate(notificationTemplate);
             notification.setUser(clientAssignment.get().getPsId());
-            
+
+            final var user = clientAssignment.get().getPsId();
+            final var email = user.getEmail();
+
+            final var subject = "New Document Uploaded: Awaiting Your Review";
+
+            Map<String, Object> templateBody = new HashMap<>();
+            templateBody.put("date", LocalDateTime.now());
+            templateBody.put("subject", subject);
+            templateBody.put("username", user.getUserName());
+            templateBody.put("message",
+                    "A new document has been uploaded by your client [" + clientAssignment.get().getClientId()
+                            + "]. Please review the document at your earliest convenience. You can access the document through the PetalPay system.");
+
+            final Runnable runnable = () -> {
+                try {
+                    emailService.sendEmail(email, subject, templateBody);
+                } catch (MessagingException e) {
+                    e.printStackTrace();
+                }
+            };
+
+            final var mailThread = new Thread(runnable);
+            mailThread.start();
         }
 
         notificationRepository.save(notification);
-        oldDocument = documentRepository.save(oldDocument); 
+        oldDocument = documentRepository.save(oldDocument);
 
         updateRes.setVersion(oldDocument.getVer());
         updateRes.setMessage("Document Has Been Uploaded!");
 
         return updateRes;
     }
-    
+
     @Override
     public UpdateResDto uploadFinalDocument(UpdateCalculatedDocumentReqDto dataRes) {
         final var updateRes = new UpdateResDto();
 
         final var schedule = scheduleRepository.findById(dataRes.getScheduleId());
-        final var scheduleRequestType = scheduleRequestTypeRepository.findByScheduleRequestCode(ScheduleRequestTypes.SQT04.name());
+        final var scheduleRequestType = scheduleRequestTypeRepository
+                .findByScheduleRequestCode(ScheduleRequestTypes.SQT04.name());
         final var clientAssignment = clientAssignmentRepository.findById(dataRes.getClientAssignmentId());
         final var userId = clientAssignment.get().getClientId().getId();
         final var current = LocalDateTime.now();
@@ -279,8 +392,8 @@ public class DocumentServiceImpl implements DocumentService {
             final var base64 = data.getBase64();
             final var documentName = data.getDocumentName();
 
-            final var directory = "/Files/" + userId + "/"+month+"/" + "finalDocuments/";
-            
+            final var directory = "/Files/" + userId + "/" + month + "/" + "finalDocuments/";
+
             final var remoteFile = directory + documentName;
 
             FtpUtil.sendFile(base64, remoteFile);
@@ -292,17 +405,41 @@ public class DocumentServiceImpl implements DocumentService {
             calculatedPayrollDocumentsRepository.save(oldDocument.get());
         });
 
-        final var notificationTemplate = notificationTemplateRepository.findByNotificationCode(NotificationCodes.NT006.name());
+        final var notificationTemplate = notificationTemplateRepository
+                .findByNotificationCode(NotificationCodes.NT006.name());
 
-        final var routeLink = "payrolls/"+ dataRes.getScheduleId();
+        final var routeLink = "payrolls/" + dataRes.getScheduleId();
 
         final var notification = new Notification();
         notification.setNotificationTemplate(notificationTemplate);
-        notification.setCreatedBy(principalService.getUserId()); 
+        notification.setCreatedBy(principalService.getUserId());
         notification.setRouteLink(routeLink);
         notification.setUser(clientAssignment.get().getClientId());
 
         notificationRepository.save(notification);
+
+        final var user = clientAssignment.get().getClientId();
+        final var email = user.getEmail();
+
+        final var subject = "Monthly Payroll Document Uploaded";
+
+        Map<String, Object> templateBody = new HashMap<>();
+        templateBody.put("date", LocalDateTime.now());
+        templateBody.put("subject", "Payroll Process Completed");
+        templateBody.put("username", user.getUserName());
+        templateBody.put("message",
+                "We are pleased to inform you that the payroll document for this month has been successfully uploaded and the payroll process is now complete. You can access and review the document through the PetalPay website.");
+
+        final Runnable runnable = () -> {
+            try {
+                emailService.sendEmail(email, subject, templateBody);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
+        };
+
+        final var mailThread = new Thread(runnable);
+        mailThread.start();
 
         updateRes.setVersion(null);
         updateRes.setMessage("Document Upload Success!");
@@ -317,7 +454,7 @@ public class DocumentServiceImpl implements DocumentService {
         final var document = documentRepository.findById(id).get();
 
         final var documentName = document.getDocumentName();
-        
+
         final var remoteFile = (document.getDocumentDirectory()) + documentName;
 
         downloadRes.setFileName(documentName);
@@ -333,7 +470,7 @@ public class DocumentServiceImpl implements DocumentService {
         final var document = calculatedPayrollDocumentsRepository.findById(id).get();
 
         final var documentName = document.getDocumentName();
-        
+
         final var remoteFile = (document.getDocumentDirectory()) + documentName;
 
         downloadRes.setFileName(documentName);

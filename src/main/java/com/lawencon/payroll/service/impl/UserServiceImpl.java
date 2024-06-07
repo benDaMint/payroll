@@ -1,8 +1,14 @@
 package com.lawencon.payroll.service.impl;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+
+import javax.mail.MessagingException;
+import javax.transaction.Transactional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -82,7 +88,7 @@ public class UserServiceImpl implements UserService {
         final var file = fileService.saveFile(data.getFileContent(), data.getFileExtension());
 
         Company company = null;
-        if(Roles.RL003.name().equals(role.getRoleCode())) {
+        if (Roles.RL003.name().equals(role.getRoleCode())) {
             final var companyReq = data.getCompanyReq();
             company = companyService.createCompany(companyReq);
         } else {
@@ -107,13 +113,20 @@ public class UserServiceImpl implements UserService {
 
         final var subject = "New User Information";
 
-        final var body = "Hello" + role.getRoleName() + "!\n"
-        + "Here's your email and password :"
-        + "Email : " + email + "\n" 
-        + "Password : " + rawPassword + "\n";
+        Map<String, Object> templateBody = new HashMap<>();
+        templateBody.put("date", LocalDateTime.now());
+        templateBody.put("subject", subject);
+        templateBody.put("username", user.getUserName());
+        templateBody.put("roleName", role.getRoleName());
+        templateBody.put("message", "Your Account has been successfully created!. Here is your password: " + rawPassword
+                + ", Thank you for joining us.");
 
         final Runnable runnable = () -> {
-        emailService.sendEmail(email, subject, body);
+            try {
+                emailService.sendEmail(email, subject, templateBody);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
         };
 
         final var mailThread = new Thread(runnable);
@@ -224,7 +237,7 @@ public class UserServiceImpl implements UserService {
             client.setEmail(unassignedClient.getEmail());
             client.setPhoneNumber(unassignedClient.getPhoneNumber());
             client.setProfilePictureId(unassignedClient.getProfilePictureId().getId());
-            
+
             unassignedClientsListRes.add(client);
         });
 
@@ -277,22 +290,22 @@ public class UserServiceImpl implements UserService {
 
             usersRes.add(userRes);
         });
-        
+
         return usersRes;
     }
-    
+
     @Override
     public UpdateResDto updateUser(UpdateUserReqDto data) {
         final var updateRes = new UpdateResDto();
         final var userId = data.getId();
-        
+
         var notFileCounter = 0;
 
         final var userName = data.getUserName();
 
         var user = userRepository.findById(userId).get();
-        
-        if(!user.getUserName().toLowerCase().equals(userName.toLowerCase())) {
+
+        if (!user.getUserName().toLowerCase().equals(userName.toLowerCase())) {
             user.setUserName(userName);
 
             notFileCounter += 1;
@@ -300,12 +313,12 @@ public class UserServiceImpl implements UserService {
 
         final var email = data.getEmail();
 
-        if(!user.getEmail().toLowerCase().equals(email)) {
+        if (!user.getEmail().toLowerCase().equals(email)) {
             final var resultEmail = userRepository.getEmailByIdAndEmail(userId, email);
-            
+
             if (resultEmail.isEmpty()) {
                 user.setEmail(email);
-                
+
                 notFileCounter += 1;
             } else {
                 throw new FailCheckException("Email already existed", HttpStatus.BAD_REQUEST);
@@ -313,9 +326,9 @@ public class UserServiceImpl implements UserService {
         }
 
         final var phoneNumber = data.getPhoneNumber();
-        if(!user.getPhoneNumber().equals(phoneNumber)) {
+        if (!user.getPhoneNumber().equals(phoneNumber)) {
             final var resultPhoneNumber = userRepository.getPhoneNumberByIdAndPhoneNumber(userId, phoneNumber);
-            
+
             if (resultPhoneNumber.isEmpty()) {
                 user.setPhoneNumber(phoneNumber);
 
@@ -328,7 +341,7 @@ public class UserServiceImpl implements UserService {
         final var profilePictureContent = data.getProfilePictureContent();
 
         var file = user.getProfilePictureId();
-        
+
         if (!file.getFileContent().equals(profilePictureContent)) {
 
             file.setFileContent(profilePictureContent);
@@ -340,12 +353,12 @@ public class UserServiceImpl implements UserService {
 
         }
 
-        if(notFileCounter > 0) {
+        if (notFileCounter > 0) {
             user.setUpdatedBy(principalService.getUserId());
             user = userRepository.save(user);
             updateRes.setVersion(user.getVer());
         }
-        
+
         updateRes.setMessage("User data has been updated");
 
         return updateRes;
@@ -369,8 +382,8 @@ public class UserServiceImpl implements UserService {
         var user = userRepository.findById(userId).get();
         final var oldPassword = data.getOldPassword();
         final var currentPassword = user.getPassword();
-        
-        if(!passwordEncoder.matches(oldPassword, currentPassword)) {
+
+        if (!passwordEncoder.matches(oldPassword, currentPassword)) {
             throw new FailCheckException("Incorrect Old Password!", HttpStatus.BAD_REQUEST);
         } else {
             final var newPassword = passwordEncoder.encode(data.getNewPassword());
@@ -382,10 +395,10 @@ public class UserServiceImpl implements UserService {
 
             updateRes.setMessage("Successfully update password!");
             updateRes.setVersion(user.getVer());
-    
+
             return updateRes;
         }
-        
+
     }
 
     @Override
