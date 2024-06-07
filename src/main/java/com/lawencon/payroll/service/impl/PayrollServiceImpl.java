@@ -1,8 +1,13 @@
 package com.lawencon.payroll.service.impl;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.mail.MessagingException;
 
 import org.springframework.stereotype.Service;
 
@@ -47,12 +52,12 @@ public class PayrollServiceImpl implements PayrollService {
     clientAssignments.forEach(clientAssignment -> {
       final var clientAssignmentId = clientAssignment.getId();
       final var schedule = scheduleRepository.findFirstByClientAssignmentIdOrderByCreatedAtDesc(clientAssignmentId);
-      
+
       final var payroll = new PayrollResDto();
       final var clientName = clientAssignment.getClientId().getUserName();
       final var clientId = clientAssignment.getClientId().getId();
       final var payrollDate = clientAssignment.getClientId().getCompanyId().getPayrollDate();
-      
+
       payroll.setClientAssignmentId(clientAssignmentId);
       payroll.setClientName(clientName);
       payroll.setClientId(clientId);
@@ -110,13 +115,21 @@ public class PayrollServiceImpl implements PayrollService {
 
     final var email = user.get().getEmail();
 
-    final var subject = "New User Information";
+    final var subject = "Reminder: Complete Your Required Document [ " + schedule.get().getCreatedAt().getMonth() + " "
+        + schedule.get().getCreatedAt().getYear() + " ]";
 
-    final var body = "Hello" + user.get().getUserName() + "!\n"
-        + "You Need To Send The Required Documents For The Payroll Service System!";
+    Map<String, Object> templateBody = new HashMap<>();
+    templateBody.put("date", LocalDateTime.now());
+    templateBody.put("subject", subject);
+    templateBody.put("username", user.get().getUserName());
+    templateBody.put("message", "Please Send The Required Documents For The Payroll Service System!");
 
     final Runnable runnable = () -> {
-      emailService.sendEmail(email, subject, body);
+      try {
+        emailService.sendEmail(email, subject, templateBody);
+      } catch (MessagingException e) {
+        e.printStackTrace();
+      }
     };
 
     final var mailThread = new Thread(runnable);
@@ -162,13 +175,19 @@ public class PayrollServiceImpl implements PayrollService {
 
     final var subject = "User Reschedule Request";
 
-    final var body = "Hello" + user.get().getUserName() + "!\n"
-        + "Please Confirm Client's Reschedule Request"
-        + "\nRequested Payroll Last Documents deadline : "
-        + newDeadline;
+    Map<String, Object> templateBody = new HashMap<>();
+    templateBody.put("date", LocalDateTime.now());
+    templateBody.put("subject", subject);
+    templateBody.put("username", user.get().getUserName());
+    templateBody.put("message",
+        "Please Confirm Client's Reschedule Request, Requested Payroll Last Documents deadline : " + newDeadline);
 
     final Runnable runnable = () -> {
-      emailService.sendEmail(email, subject, body);
+      try {
+        emailService.sendEmail(email, subject, templateBody);
+      } catch (MessagingException e) {
+        e.printStackTrace();
+      }
     };
 
     final var mailThread = new Thread(runnable);

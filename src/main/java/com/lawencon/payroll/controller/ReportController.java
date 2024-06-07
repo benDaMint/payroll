@@ -22,14 +22,15 @@ public class ReportController {
   private final ReportService reportService;
 
   @GetMapping("{scheduleId}")
-  public ResponseEntity<?> downloadFinalDocument(@PathVariable String scheduleId) throws FileNotFoundException, JRException  {
-      final var fileName = "Monthly Payroll Report.pdf";
-      
-      final var jasPrint = reportService.exportReport(scheduleId);
+  public ResponseEntity<?> downloadFinalDocument(@PathVariable String scheduleId)
+      throws FileNotFoundException, JRException {
+    final var fileName = "Monthly Payroll Report.pdf";
 
-      final var fileArray = JasperExportManager.exportReportToPdf(jasPrint);
+    final var jasPrint = reportService.exportReport(scheduleId);
 
-      return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
-      "attachment; filename=" + fileName).body(fileArray);
+    final var fileArray = JasperExportManager.exportReportToPdf(jasPrint);
+
+    return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
+        "attachment; filename=" + fileName).body(fileArray);
   }
 }
