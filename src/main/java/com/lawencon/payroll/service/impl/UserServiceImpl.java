@@ -413,6 +413,7 @@ public class UserServiceImpl implements UserService {
         userResDto.setEmail(user.get().getEmail());
         userResDto.setId(id);
         userResDto.setPhoneNumber(user.get().getPhoneNumber());
+        userResDto.setProfilePictureId(user.get().getProfilePictureId().getId());
         userResDto.setProfilePictureContent(user.get().getProfilePictureId().getFileContent());
         userResDto.setProfilePictureExtension(user.get().getProfilePictureId().getFileExtension());
         userResDto.setRoleName(user.get().getRoleId().getRoleName());
