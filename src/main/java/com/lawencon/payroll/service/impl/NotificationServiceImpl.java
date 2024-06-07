@@ -60,7 +60,7 @@ public class NotificationServiceImpl implements NotificationService {
     public void readNotification(String id) {
         var notification = notificationRepository.findById(id).get();
         notification.setIsActive(false);
-        notificationRepository.saveAndFlush(notification);
+        notificationRepository.save(notification);
     }
 
     @Override
