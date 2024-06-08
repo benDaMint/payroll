@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.11.0.final using JasperReports Library version 6.11.0-0c4056ccaa4d25a5a8c45672d2f764ea3498bebb  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="payrolls" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="9822b037-c92b-482c-bb84-84c3c71af8da">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="payrolls" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="0" uuid="9822b037-c92b-482c-bb84-84c3c71af8da">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<parameter name="payrollDate" class="java.time.LocalDateTime"/>
 	<parameter name="clientName" class="java.lang.String"/>
@@ -33,7 +33,7 @@
 					<text><![CDATA[Payroll Report ]]></text>
 				</staticText>
 				<rectangle>
-					<reportElement x="110" y="51" width="148" height="4" forecolor="#FFFFFF" backcolor="#0D9488" uuid="19ccf705-9784-4618-abb5-8e2ce1d831fd"/>
+					<reportElement x="110" y="50" width="148" height="3" forecolor="#FFFFFF" backcolor="#0D9488" uuid="19ccf705-9784-4618-abb5-8e2ce1d831fd"/>
 				</rectangle>
 				<rectangle>
 					<reportElement x="0" y="88" width="595" height="4" forecolor="#FFFFFF" backcolor="#0D9488" uuid="0e868ebd-ca64-4b73-ac80-d726db42c87d"/>
@@ -221,27 +221,27 @@
 	<pageFooter>
 		<band height="22">
 			<textField>
-				<reportElement mode="Opaque" x="419" y="4" width="134" height="13" forecolor="#FFFFFF" backcolor="#0D9488" uuid="7ec0bf4e-699b-40dd-8f67-7621ee383a57"/>
+				<reportElement mode="Opaque" x="419" y="9" width="134" height="13" forecolor="#FFFFFF" backcolor="#0D9488" uuid="7ec0bf4e-699b-40dd-8f67-7621ee383a57"/>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression><![CDATA["Page "+$V{PAGE_NUMBER}+" of " + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 			<textField pattern="EEEEE dd MMMMM yyyy">
-				<reportElement mode="Opaque" x="0" y="4" width="139" height="13" forecolor="#FFFFFF" backcolor="#0D9488" uuid="7878c40d-2734-4a3d-90c1-791c4a08715f">
+				<reportElement mode="Opaque" x="0" y="9" width="139" height="13" forecolor="#FFFFFF" backcolor="#0D9488" uuid="7878c40d-2734-4a3d-90c1-791c4a08715f">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement mode="Opaque" x="139" y="4" width="280" height="13" forecolor="#FFFFFF" backcolor="#0D9488" uuid="f267ee43-7405-430b-ba85-61431230fdcc"/>
+				<reportElement mode="Opaque" x="139" y="9" width="280" height="13" forecolor="#FFFFFF" backcolor="#0D9488" uuid="f267ee43-7405-430b-ba85-61431230fdcc"/>
 				<textElement textAlignment="Center"/>
 				<text><![CDATA[Copyright ©2024]]></text>
 			</staticText>
 			<frame>
-				<reportElement mode="Opaque" x="553" y="4" width="22" height="13" forecolor="#FFFFFF" backcolor="#0D9488" uuid="c283b331-aa73-4958-b22e-ed383a800393"/>
+				<reportElement mode="Opaque" x="553" y="9" width="22" height="13" forecolor="#FFFFFF" backcolor="#0D9488" uuid="c283b331-aa73-4958-b22e-ed383a800393"/>
 			</frame>
 			<frame>
-				<reportElement mode="Opaque" x="-20" y="4" width="20" height="13" forecolor="#FFFFFF" backcolor="#0D9488" uuid="c3443f82-c962-431d-b02c-bdd66c3f8c1a"/>
+				<reportElement mode="Opaque" x="-20" y="9" width="20" height="13" forecolor="#FFFFFF" backcolor="#0D9488" uuid="c3443f82-c962-431d-b02c-bdd66c3f8c1a"/>
 			</frame>
 		</band>
 	</pageFooter>
