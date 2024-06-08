@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.mail.MessagingException;
+import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -60,6 +61,7 @@ public class DocumentServiceImpl implements DocumentService {
     private EmailService emailService;
 
     @Override
+    @Transactional
     public InsertResDto createDocuments(DocumentReqDto data) {
         final var insertRes = new InsertResDto();
 
@@ -205,6 +207,7 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
+    @Transactional
     public UpdateResDto rescheduleDocuments(List<UpdateDocumentScheduleReqDto> data) {
         final var updateRes = new UpdateResDto();
 
@@ -252,6 +255,7 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
+    @Transactional
     public UpdateResDto uploadDocument(UpdateDocumentReqDto data) {
         final var updateRes = new UpdateResDto();
 
@@ -371,6 +375,7 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
+    @Transactional
     public UpdateResDto uploadFinalDocument(UpdateCalculatedDocumentReqDto dataRes) {
         final var updateRes = new UpdateResDto();
 
@@ -448,6 +453,7 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
+    @Transactional
     public DocumentDownloadResDto downloadDocument(String id) {
         final var downloadRes = new DocumentDownloadResDto();
 

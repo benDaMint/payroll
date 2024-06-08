@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.mail.MessagingException;
+import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
 
@@ -88,6 +89,7 @@ public class PayrollServiceImpl implements PayrollService {
   }
 
   @Override
+  @Transactional
   public InsertResDto createPingNotification(String scheduleId) {
     final var insertRes = new InsertResDto();
 
@@ -142,6 +144,7 @@ public class PayrollServiceImpl implements PayrollService {
   }
 
   @Override
+  @Transactional
   public InsertResDto createRescheduleNotification(RescheduleReqDto data) {
     final var insertRes = new InsertResDto();
 

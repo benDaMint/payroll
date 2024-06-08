@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import javax.transaction.Transactional;
+
 import org.springframework.stereotype.Service;
 
 import com.lawencon.payroll.constant.ScheduleRequestTypes;
@@ -31,11 +33,13 @@ public class ScheduleServiceImpl implements ScheduleService {
     private final DocumentRepository documentRepository;
 
     @Override
+    @Transactional
     public Schedule addNewSchedule(String clientAssignmentId, String scheduleRequestTypeId) {
         final var schedule = new Schedule();
 
         final var clientAssignment = clientAssignmentRepository.findById(clientAssignmentId);
-        final var scheduleRequestType = scheduleRequestTypeRepository.findByScheduleRequestCode(ScheduleRequestTypes.SQT01.name());
+        final var scheduleRequestType = scheduleRequestTypeRepository
+                .findByScheduleRequestCode(ScheduleRequestTypes.SQT01.name());
 
         final var userId = clientAssignment.get().getClientId().getId();
 
@@ -52,7 +56,7 @@ public class ScheduleServiceImpl implements ScheduleService {
 
     @Override
     public List<ScheduleResDto> getByClientAssignmentId(String clientAssignmentId) {
-        final var schedulesRes = new ArrayList<ScheduleResDto>(); 
+        final var schedulesRes = new ArrayList<ScheduleResDto>();
         final var schedules = scheduleRepository.findByClientAssignmentIdOrderByCreatedAtDesc(clientAssignmentId);
         final var clientAssignment = clientAssignmentRepository.findById(clientAssignmentId);
         final var monthYearFormatter = DateTimeFormatter.ofPattern("MM/yyyy");
@@ -65,7 +69,7 @@ public class ScheduleServiceImpl implements ScheduleService {
             final var scheduleStatusCode = schedule.getScheduleRequestType().getScheduleRequestCode();
             final var createdAt = monthYearFormatter.format(schedule.getCreatedAt());
             final var payrollDate = clientAssignment.get().getClientId().getCompanyId().getPayrollDate();
-            final var returnedPayrollDate = payrollDate+"/"+createdAt;
+            final var returnedPayrollDate = payrollDate + "/" + createdAt;
 
             scheduleRes.setScheduleId(scheduleId);
             scheduleRes.setScheduleStatusName(scheduleStatusName);
@@ -75,17 +79,16 @@ public class ScheduleServiceImpl implements ScheduleService {
 
             final var documents = documentRepository.findByScheduleIdOrderByDocumentDeadlineAsc(scheduleId);
 
-            if(documents.size() == 0) {
+            if (documents.size() == 0) {
                 scheduleRes.setCanBeRescheduled(false);
-            }else {
-                for(var document : documents) {
-                    if(Optional.ofNullable(document.getDocumentDirectory()).isPresent()) {
+            } else {
+                for (var document : documents) {
+                    if (Optional.ofNullable(document.getDocumentDirectory()).isPresent()) {
                         scheduleRes.setCanBeRescheduled(false);
                         break;
                     }
                 }
             }
-
 
             schedulesRes.add(scheduleRes);
         });
@@ -95,7 +98,7 @@ public class ScheduleServiceImpl implements ScheduleService {
 
     @Override
     public List<ScheduleResDto> getByLoginClient() {
-        final var schedulesRes = new ArrayList<ScheduleResDto>(); 
+        final var schedulesRes = new ArrayList<ScheduleResDto>();
         final var clientId = principalService.getUserId();
         final var clientAssignment = clientAssignmentRepository.findByClientIdId(clientId);
         final var schedules = scheduleRepository.findByClientAssignmentIdOrderByCreatedAtDesc(clientAssignment.getId());
@@ -109,7 +112,7 @@ public class ScheduleServiceImpl implements ScheduleService {
             final var scheduleStatusCode = schedule.getScheduleRequestType().getScheduleRequestCode();
             final var createdAt = monthYearFormatter.format(schedule.getCreatedAt());
             final var payrollDate = clientAssignment.getClientId().getCompanyId().getPayrollDate();
-            final var returnedPayrollDate = payrollDate+"/"+createdAt;
+            final var returnedPayrollDate = payrollDate + "/" + createdAt;
 
             scheduleRes.setScheduleId(scheduleId);
             scheduleRes.setScheduleStatusName(scheduleStatusName);
@@ -119,18 +122,16 @@ public class ScheduleServiceImpl implements ScheduleService {
 
             final var documents = documentRepository.findByScheduleIdOrderByDocumentDeadlineAsc(scheduleId);
 
-
-            if(documents.size() == 0) {
+            if (documents.size() == 0) {
                 scheduleRes.setCanBeRescheduled(false);
-            }else {
-                for(var document : documents) {
-                    if(Optional.ofNullable(document.getDocumentDirectory()).isPresent()) {
+            } else {
+                for (var document : documents) {
+                    if (Optional.ofNullable(document.getDocumentDirectory()).isPresent()) {
                         scheduleRes.setCanBeRescheduled(false);
                         break;
                     }
                 }
             }
-
 
             schedulesRes.add(scheduleRes);
         });
