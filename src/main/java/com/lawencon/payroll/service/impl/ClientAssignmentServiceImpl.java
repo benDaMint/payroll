@@ -2,6 +2,8 @@ package com.lawencon.payroll.service.impl;
 
 import java.util.Optional;
 
+import javax.transaction.Transactional;
+
 import org.springframework.stereotype.Service;
 
 import com.lawencon.payroll.dto.clientAssignment.ClientAssignmentReqDto;
@@ -40,9 +42,10 @@ public class ClientAssignmentServiceImpl implements ClientAssignmentService {
   }
 
   @Override
+  @Transactional
   public InsertResDto saveClientAssignment(ClientAssignmentReqDto data) {
     final var insertRes = new InsertResDto();
-    
+
     final var psId = data.getPsId();
 
     final var clients = data.getClients();

@@ -1,5 +1,7 @@
 package com.lawencon.payroll.service.impl;
 
+import javax.transaction.Transactional;
+
 import org.springframework.stereotype.Service;
 
 import com.lawencon.payroll.dto.file.FileReqDto;
@@ -20,9 +22,10 @@ public class FileServiceImpl implements FileService {
     private final PrincipalService principalService;
 
     @Override
+    @Transactional
     public File saveFile(String content, String extension) {
         final var file = new File();
-        
+
         file.setFileContent(content);
         file.setFileExtension(extension);
 
@@ -38,13 +41,15 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
+    @Transactional
     public File updateFile(File file) {
         file.setUpdatedBy(principalService.getUserId());
-        
+
         return fileRepository.save(file);
     }
 
     @Override
+    @Transactional
     public InsertResDto uploadFile(FileReqDto data) {
         final var base64 = data.getBase64();
         final var extension = data.getExtension();
@@ -62,7 +67,7 @@ public class FileServiceImpl implements FileService {
         final var insertRes = new InsertResDto();
         insertRes.setId(file.getId());
         insertRes.setMessage("File has been uploaded");
-        
+
         return insertRes;
     }
 

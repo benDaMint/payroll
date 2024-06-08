@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import javax.transaction.Transactional;
+
 import org.springframework.stereotype.Service;
 
 import com.lawencon.payroll.constant.Roles;
@@ -75,6 +77,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    @Transactional
     public InsertResDto saveChat(ChatMessageDto chatReq) {
         Optional<User> currentUser = userRepository.findById(chatReq.getSenderId());
         User user = currentUser.orElseThrow(() -> new RuntimeException("User not found"));

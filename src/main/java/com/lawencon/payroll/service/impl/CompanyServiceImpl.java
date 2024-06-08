@@ -3,6 +3,8 @@ package com.lawencon.payroll.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -31,14 +33,14 @@ public class CompanyServiceImpl implements CompanyService {
     @Override
     public Company createCompany(CompanyReqDto data) {
         final String id = principalService.getUserId();
-        
+
         final var file = fileService.saveFile(data.getFileContent(), data.getFileExtension());
 
         final var company = new Company();
-        
+
         company.setCompanyName(data.getCompanyName());
         company.setCompanyLogo(file);
-        
+
         company.setPayrollDate(Integer.valueOf(data.getPayrollDate()));
 
         company.setCreatedBy(id);
@@ -54,7 +56,7 @@ public class CompanyServiceImpl implements CompanyService {
     @Override
     public List<CompanyResDto> getCompanies() {
         final var companiesRes = new ArrayList<CompanyResDto>();
-        
+
         final var companies = companyRepository.findAll();
 
         companies.forEach(company -> {
@@ -64,7 +66,7 @@ public class CompanyServiceImpl implements CompanyService {
             companyRes.setCompanyName(company.getCompanyName());
             companyRes.setCompanyLogoContent(company.getCompanyLogo().getFileContent());
             companyRes.setCompanyLogoExtension(company.getCompanyLogo().getFileExtension());
-            
+
             companiesRes.add(companyRes);
         });
 
@@ -72,23 +74,24 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
+    @Transactional
     public UpdateResDto updateCompany(UpdateCompanyReqDto data) {
         final var updateRes = new UpdateResDto();
-        
+
         var isUpdateFileOnly = true;
-        
+
         final var companyId = data.getId();
         final var companyName = data.getCompanyName();
-        
+
         var company = companyRepository.findById(companyId).get();
-        
-        if(!company.getCompanyName().toLowerCase().equals(companyName.toLowerCase())) {
+
+        if (!company.getCompanyName().toLowerCase().equals(companyName.toLowerCase())) {
             final var resultName = companyRepository.getCompanyNameByIdAndName(companyId, companyName);
-            
-            if(resultName.isEmpty()) {
+
+            if (resultName.isEmpty()) {
                 company.setCompanyName(companyName);
                 company.setUpdatedBy(principalService.getUserId());
-                
+
                 isUpdateFileOnly = false;
             } else {
                 throw new FailCheckException("Company name already existed", HttpStatus.BAD_REQUEST);
@@ -111,7 +114,7 @@ public class CompanyServiceImpl implements CompanyService {
             company = companyRepository.save(company);
             updateRes.setVersion(company.getVer());
         }
-        
+
         updateRes.setMessage("Company data has been updated!");
 
         return updateRes;
