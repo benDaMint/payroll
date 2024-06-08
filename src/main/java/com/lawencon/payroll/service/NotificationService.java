@@ -3,6 +3,7 @@ package com.lawencon.payroll.service;
 import java.util.List;
 
 import com.lawencon.payroll.dto.generalResponse.DeleteResDto;
+import com.lawencon.payroll.dto.generalResponse.UpdateResDto;
 import com.lawencon.payroll.dto.notification.NotificationResDto;
 
 public interface NotificationService {
@@ -11,6 +12,8 @@ public interface NotificationService {
     Integer getNotificationCount();
 
     void readNotification(String id);
+
+    UpdateResDto readAllUserNotification(String id);
 
     DeleteResDto deleteNotification(String id); 
 

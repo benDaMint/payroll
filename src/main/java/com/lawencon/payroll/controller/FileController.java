@@ -28,12 +28,6 @@ public class FileController {
 
     private final FileService fileService;
 
-    @PostMapping("")
-    public ResponseEntity<InsertResDto> uploadFile(@RequestBody FileReqDto data) {
-        final var insertRes = fileService.uploadFile(data);
-        return new ResponseEntity<>(insertRes, HttpStatus.CREATED);
-    }
-
     @GetMapping("{id}")
     public ResponseEntity<?> downloadFile(@PathVariable String id) {
         File file = null;

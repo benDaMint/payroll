@@ -147,6 +147,7 @@ public class PayrollServiceImpl implements PayrollService {
   @Transactional
   public InsertResDto createRescheduleNotification(RescheduleReqDto data) {
     final var insertRes = new InsertResDto();
+    final var monthYearFormatter = DateTimeFormatter.ofPattern("MM/yyyy");
 
     var notification = new Notification();
 
@@ -162,10 +163,14 @@ public class PayrollServiceImpl implements PayrollService {
 
     final var user = userRepository.findById(psId);
 
+    final var createdAt = monthYearFormatter.format(schedule.get().getCreatedAt());
+    final var payrollDate = clientAssignment.getClientId().getCompanyId().getPayrollDate();
+    final var returnedPayrollDate = payrollDate+"/"+createdAt;
+
     final var notificationTemplate = notificationTemplateRepository
         .findByNotificationCode(NotificationCodes.NT007.name());
 
-    final var routeLink = "schedules/reschedule?id=" + scheduleId + "&payrollDate=" + schedule.get().getCreatedAt();
+    final var routeLink = "schedules/reschedule?id=" + scheduleId + "&payrollDate=" + returnedPayrollDate;
 
     notification.setRouteLink(routeLink);
     notification.setNotificationTemplate(notificationTemplate);

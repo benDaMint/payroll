@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.lawencon.payroll.dto.generalResponse.DeleteResDto;
+import com.lawencon.payroll.dto.generalResponse.UpdateResDto;
 import com.lawencon.payroll.dto.notification.NotificationResDto;
 import com.lawencon.payroll.service.NotificationService;
 
@@ -39,6 +40,13 @@ public class NotificationController {
     @PatchMapping("{id}")
     public void readNotification(@PathVariable String id) {
         notificationService.readNotification(id);
+    }
+
+    @PatchMapping("read-all/{id}")
+    public ResponseEntity<UpdateResDto> readAllUserNotification(@PathVariable String id) {
+        final var updateRes = notificationService.readAllUserNotification(id);
+
+        return new ResponseEntity<>(updateRes, HttpStatus.OK);
     }
 
     @DeleteMapping("{id}")

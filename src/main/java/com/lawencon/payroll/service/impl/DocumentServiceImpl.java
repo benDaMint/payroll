@@ -223,7 +223,7 @@ public class DocumentServiceImpl implements DocumentService {
 
         final var doc = documentRepository.findById(data.get(0).getDocumentId());
 
-        final var schedule = scheduleRepository.findById(doc.get().getId());
+        final var schedule = scheduleRepository.findById(doc.get().getSchedule().getId());
 
         final var user = userRepository.findById(schedule.get().getClientAssignment().getClientId().getId());
 
@@ -248,6 +248,19 @@ public class DocumentServiceImpl implements DocumentService {
 
         final var mailThread = new Thread(runnable);
         mailThread.start();
+
+        final var notificationTemplate = notificationTemplateRepository
+                .findByNotificationCode(NotificationCodes.NT002.name());
+
+        final var routeLink = "payrolls/" + schedule.get().getId();
+
+        final var notification = new Notification();
+        notification.setNotificationTemplate(notificationTemplate);
+        notification.setCreatedBy(principalService.getUserId());
+        notification.setRouteLink(routeLink);
+        notification.setUser(schedule.get().getClientAssignment().getClientId());
+
+        notificationRepository.save(notification);
 
         updateRes.setVersion(null);
         updateRes.setMessage("Document(s) have been rescheduled!");

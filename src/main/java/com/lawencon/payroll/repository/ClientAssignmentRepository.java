@@ -1,6 +1,7 @@
 package com.lawencon.payroll.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -20,5 +21,5 @@ public interface ClientAssignmentRepository extends JpaRepository<ClientAssignme
       + "WHERE ca.psId.id = :psId ")
   List<ClientAssignment> getByPsId(@Param("psId") String psId);
 
-  ClientAssignment findByClientIdId(String clientId);
+  Optional<ClientAssignment> findByClientIdId(String clientId);
 }

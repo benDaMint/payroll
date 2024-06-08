@@ -35,7 +35,7 @@ public class LoginServiceImpl implements LoginService {
 
         final var email = data.getEmail();
         try {
-            final Optional<User> user = Optional.ofNullable(userRepository.findByEmail(email));
+            final Optional<User> user = Optional.ofNullable(userRepository.findByEmail(email).get());
 
             if (user.isPresent()) {
                 final var loginPassword = data.getPassword();
