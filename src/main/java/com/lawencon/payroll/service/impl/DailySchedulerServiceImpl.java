@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import javax.mail.MessagingException;
+import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -49,6 +50,7 @@ public class DailySchedulerServiceImpl implements DailySchedulerService {
 
   @Scheduled(fixedRate = 1000 * 60 * 30)
   @Override
+  @Transactional
   public void addMonthlyScheduleJob() {
     final var currentTime = LocalDateTime.now().getHour();
 

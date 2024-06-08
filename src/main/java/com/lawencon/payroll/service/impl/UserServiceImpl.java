@@ -372,6 +372,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public DeleteResDto deleteUserById(String id) {
         userRepository.deleteById(id);
 
@@ -382,6 +383,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UpdateResDto updatePassword(PasswordReqDto data) {
         final var updateRes = new UpdateResDto();
 

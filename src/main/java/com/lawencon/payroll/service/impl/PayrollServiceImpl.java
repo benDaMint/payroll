@@ -144,6 +144,7 @@ public class PayrollServiceImpl implements PayrollService {
   }
 
   @Override
+  @Transactional
   public InsertResDto createRescheduleNotification(RescheduleReqDto data) {
     final var insertRes = new InsertResDto();
     final var monthYearFormatter = DateTimeFormatter.ofPattern("MM/yyyy");
