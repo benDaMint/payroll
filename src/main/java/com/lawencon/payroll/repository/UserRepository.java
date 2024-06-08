@@ -12,7 +12,7 @@ import com.lawencon.payroll.model.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, String>{
-  User findByEmail(String email);
+  Optional<User> findByEmail(String email);
 
   @Query(value = "SELECT cl FROM User cl "
               + "INNER JOIN Role r "
@@ -64,4 +64,5 @@ public interface UserRepository extends JpaRepository<User, String>{
                     + "WHERE u.id != :id "
                     + "AND LOWER(u.phoneNumber) = LOWER(:phoneNumber) ")
   Optional<String> getPhoneNumberByIdAndPhoneNumber(@Param("id") String id, @Param("phoneNumber") String phoneNumber);
+
 }

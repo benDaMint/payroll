@@ -73,9 +73,9 @@ public class ClientAssignmentServiceImpl implements ClientAssignmentService {
 
     final var clientAssignmentResDto = new ClientAssignmentResDto();
 
-    final var payrollServiceId = clientAssignment.getPsId().getId();
+    final var payrollServiceId = clientAssignment.get().getPsId().getId();
 
-    final var clientAssignmentId = clientAssignment.getId();
+    final var clientAssignmentId = clientAssignment.get().getId();
 
     clientAssignmentResDto.setId(clientAssignmentId);
     clientAssignmentResDto.setClientId(clientId);

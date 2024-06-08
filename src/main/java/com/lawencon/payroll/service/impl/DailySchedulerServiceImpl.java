@@ -1,6 +1,7 @@
 package com.lawencon.payroll.service.impl;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.HashMap;
 import java.util.Locale;
@@ -60,6 +61,7 @@ public class DailySchedulerServiceImpl implements DailySchedulerService {
           .findByNotificationCode(NotificationCodes.NT001.name());
       final var deadlineNotificationTemplate = notificationTemplateRepository
           .findByNotificationCode(NotificationCodes.NT005.name());
+        final var monthYearFormatter = DateTimeFormatter.ofPattern("MM/yyyy");
 
       clientAssignments.forEach(clientAssignment -> {
         final var latestSchedule = scheduleRepository
@@ -90,9 +92,11 @@ public class DailySchedulerServiceImpl implements DailySchedulerService {
 
           final String scheduleId = schedule.getId();
 
-          final String payrollDate = schedule.getCreatedAt().toString();
+          final var createdAt = monthYearFormatter.format(schedule.getCreatedAt());
+          final var payrollDate = clientAssignment.getClientId().getCompanyId().getPayrollDate();
+          final var returnedPayrollDate = payrollDate+"/"+createdAt;
 
-          final var routeLink = "schedules/create?id=" + scheduleId + "&payrollDate=" + payrollDate;
+          final var routeLink = "schedules/create?id=" + scheduleId + "&payrollDate=" + returnedPayrollDate;
 
           final var notification = new Notification();
           notification.setNotificationTemplate(notificationTemplate);

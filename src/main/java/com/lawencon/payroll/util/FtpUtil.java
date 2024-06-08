@@ -12,7 +12,7 @@ import org.apache.commons.net.ftp.FTPClient;
 public class FtpUtil {
 
 	public static void sendFile(String fileBase64, String remoteFile) {
-		final String server = "192.168.20.34";
+		final String server = "192.168.100.68";
 		final int port = 21;
 		final String user = "gladosbot1@outlook.com";
 		final String pass = "forScienceChell";
@@ -53,7 +53,7 @@ public class FtpUtil {
 	}
 
 	public static byte[] downloadFile(String remoteFile) {
-		final String server = "192.168.20.34";
+		final String server = "192.168.100.68";
 		final int port = 21;
 		final String user = "gladosbot1@outlook.com";
 		final String pass = "forScienceChell";
@@ -92,7 +92,7 @@ public class FtpUtil {
 	}
 
 	public static void createDirectory(String userId) {
-		final String server = "192.168.20.34";
+		final String server = "192.168.100.68";
 		final int port = 21;
 		final String user = "gladosbot1@outlook.com";
 		final String pass = "forScienceChell";
@@ -130,7 +130,7 @@ public class FtpUtil {
 	}
 
 	public static void createNestedDirectory(String directory) {
-		final String server = "192.168.20.34";
+		final String server = "192.168.100.68";
 		final int port = 21;
 		final String user = "gladosbot1@outlook.com";
 		final String pass = "forScienceChell";

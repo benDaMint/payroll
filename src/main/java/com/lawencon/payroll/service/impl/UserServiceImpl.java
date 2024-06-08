@@ -61,7 +61,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        final var user = userRepository.findByEmail(email);
+        final var user = userRepository.findByEmail(email).get();
         if (user != null) {
             return new org.springframework.security.core.userdetails.User(email, user.getPassword(),
                     new ArrayList<>());
@@ -70,6 +70,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public InsertResDto createUser(UserReqDto data) {
 
         System.out.println(principalService.getUserId());
@@ -78,6 +79,12 @@ public class UserServiceImpl implements UserService {
 
         final var rawPassword = GenerateUtil.generateCode();
         final var password = passwordEncoder.encode(rawPassword);
+
+        final var checkUserEmail = userRepository.findByEmail(data.getEmail());
+
+        if(checkUserEmail.isPresent()) {
+            throw new FailCheckException("Email already existed", HttpStatus.BAD_REQUEST);
+        }
 
         var user = new User();
 
@@ -92,7 +99,7 @@ public class UserServiceImpl implements UserService {
             final var companyReq = data.getCompanyReq();
             company = companyService.createCompany(companyReq);
         } else {
-            company = companyService.findByCompanyName("PT. Lawencon International");
+            company = companyService.findByCompanyName("PT. PetalPay Indonesia");
         }
 
         user.setUserName(data.getUserName());

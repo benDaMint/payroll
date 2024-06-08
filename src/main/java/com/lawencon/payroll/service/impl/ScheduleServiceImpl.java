@@ -98,43 +98,39 @@ public class ScheduleServiceImpl implements ScheduleService {
         final var schedulesRes = new ArrayList<ScheduleResDto>(); 
         final var clientId = principalService.getUserId();
         final var clientAssignment = clientAssignmentRepository.findByClientIdId(clientId);
-        final var schedules = scheduleRepository.findByClientAssignmentIdOrderByCreatedAtDesc(clientAssignment.getId());
         final var monthYearFormatter = DateTimeFormatter.ofPattern("MM/yyyy");
 
-        schedules.forEach(schedule -> {
-            final var scheduleRes = new ScheduleResDto();
+        if(clientAssignment.isPresent()){
+            final var schedules = scheduleRepository.findByClientAssignmentIdOrderByCreatedAtDesc(clientAssignment.get().getId());
 
-            final var scheduleId = schedule.getId();
-            final var scheduleStatusName = schedule.getScheduleRequestType().getScheduleRequestName();
-            final var scheduleStatusCode = schedule.getScheduleRequestType().getScheduleRequestCode();
-            final var createdAt = monthYearFormatter.format(schedule.getCreatedAt());
-            final var payrollDate = clientAssignment.getClientId().getCompanyId().getPayrollDate();
-            final var returnedPayrollDate = payrollDate+"/"+createdAt;
-
-            scheduleRes.setScheduleId(scheduleId);
-            scheduleRes.setScheduleStatusName(scheduleStatusName);
-            scheduleRes.setScheduleStatusCode(scheduleStatusCode);
-            scheduleRes.setPayrollDate(returnedPayrollDate);
-            scheduleRes.setCanBeRescheduled(true);
-
-            final var documents = documentRepository.findByScheduleIdOrderByDocumentDeadlineAsc(scheduleId);
-
-
-            if(documents.size() == 0) {
-                scheduleRes.setCanBeRescheduled(false);
-            }else {
-                for(var document : documents) {
-                    if(Optional.ofNullable(document.getDocumentDirectory()).isPresent()) {
-                        scheduleRes.setCanBeRescheduled(false);
-                        break;
+            schedules.forEach(schedule -> {
+                final var scheduleRes = new ScheduleResDto();
+                final var scheduleId = schedule.getId();
+                final var scheduleStatusName = schedule.getScheduleRequestType().getScheduleRequestName();
+                final var scheduleStatusCode = schedule.getScheduleRequestType().getScheduleRequestCode();
+                final var createdAt = monthYearFormatter.format(schedule.getCreatedAt());
+                final var payrollDate = clientAssignment.get().getClientId().getCompanyId().getPayrollDate();
+                final var returnedPayrollDate = payrollDate+"/"+createdAt;
+                scheduleRes.setScheduleId(scheduleId);
+                scheduleRes.setScheduleStatusName(scheduleStatusName);
+                scheduleRes.setScheduleStatusCode(scheduleStatusCode);
+                scheduleRes.setPayrollDate(returnedPayrollDate);
+                scheduleRes.setCanBeRescheduled(true);
+                final var documents = documentRepository.findByScheduleIdOrderByDocumentDeadlineAsc(scheduleId);
+                if(documents.size() == 0) {
+                    scheduleRes.setCanBeRescheduled(false);
+                }else {
+                    for(var document : documents) {
+                        if(Optional.ofNullable(document.getDocumentDirectory()).isPresent()) {
+                            scheduleRes.setCanBeRescheduled(false);
+                            break;
+                        }
                     }
                 }
-            }
-
-
-            schedulesRes.add(scheduleRes);
-        });
-
+            
+                schedulesRes.add(scheduleRes);
+            });
+        }
         return schedulesRes;
     }
 }
